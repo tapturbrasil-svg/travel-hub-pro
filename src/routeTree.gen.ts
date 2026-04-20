@@ -10,33 +10,72 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ViagemSlugRouteImport } from './routes/viagem.$slug'
+import { Route as ReservaConfirmadaSlugRouteImport } from './routes/reserva-confirmada.$slug'
+import { Route as CheckoutSlugRouteImport } from './routes/checkout.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ViagemSlugRoute = ViagemSlugRouteImport.update({
+  id: '/viagem/$slug',
+  path: '/viagem/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReservaConfirmadaSlugRoute = ReservaConfirmadaSlugRouteImport.update({
+  id: '/reserva-confirmada/$slug',
+  path: '/reserva-confirmada/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutSlugRoute = CheckoutSlugRouteImport.update({
+  id: '/checkout/$slug',
+  path: '/checkout/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/checkout/$slug': typeof CheckoutSlugRoute
+  '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
+  '/viagem/$slug': typeof ViagemSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/checkout/$slug': typeof CheckoutSlugRoute
+  '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
+  '/viagem/$slug': typeof ViagemSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/checkout/$slug': typeof CheckoutSlugRoute
+  '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
+  '/viagem/$slug': typeof ViagemSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/checkout/$slug'
+    | '/reserva-confirmada/$slug'
+    | '/viagem/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/checkout/$slug' | '/reserva-confirmada/$slug' | '/viagem/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/checkout/$slug'
+    | '/reserva-confirmada/$slug'
+    | '/viagem/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CheckoutSlugRoute: typeof CheckoutSlugRoute
+  ReservaConfirmadaSlugRoute: typeof ReservaConfirmadaSlugRoute
+  ViagemSlugRoute: typeof ViagemSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,21 +87,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/viagem/$slug': {
+      id: '/viagem/$slug'
+      path: '/viagem/$slug'
+      fullPath: '/viagem/$slug'
+      preLoaderRoute: typeof ViagemSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reserva-confirmada/$slug': {
+      id: '/reserva-confirmada/$slug'
+      path: '/reserva-confirmada/$slug'
+      fullPath: '/reserva-confirmada/$slug'
+      preLoaderRoute: typeof ReservaConfirmadaSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/$slug': {
+      id: '/checkout/$slug'
+      path: '/checkout/$slug'
+      fullPath: '/checkout/$slug'
+      preLoaderRoute: typeof CheckoutSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CheckoutSlugRoute: CheckoutSlugRoute,
+  ReservaConfirmadaSlugRoute: ReservaConfirmadaSlugRoute,
+  ViagemSlugRoute: ViagemSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
