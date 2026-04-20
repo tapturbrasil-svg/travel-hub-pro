@@ -38,7 +38,7 @@ export const Route = createFileRoute("/viagem/$slug")({
 });
 
 function TripPage() {
-  const { trip } = Route.useLoaderData();
+  const { trip } = Route.useLoaderData() as { trip: Trip };
 
   return (
     <div className="min-h-screen bg-background">
