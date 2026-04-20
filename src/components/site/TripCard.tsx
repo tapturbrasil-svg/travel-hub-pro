@@ -31,7 +31,7 @@ export function TripCard({ trip }: { trip: Trip }) {
           <span className="text-xs text-muted-foreground">{trip.nights} noites</span>
         </div>
         <p className="text-sm text-muted-foreground">
-          Saindo de {trip.departureCity} • {formatDateShort(trip.departureDate)} a{" "}
+          por {trip.agency} • {formatDateShort(trip.departureDate)} a{" "}
           {formatDateShort(trip.returnDate)}
         </p>
         <p className="pt-2 text-sm">
