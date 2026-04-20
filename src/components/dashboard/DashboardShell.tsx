@@ -10,11 +10,11 @@ import {
 import { CURRENT_AGENCY_SLUG } from "@/data/dashboard";
 import { getAgencyBySlug } from "@/data/agencies";
 
-const NAV = [
+const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/dashboard", label: "Visão geral", icon: LayoutDashboard, exact: true },
   { to: "/dashboard/viagens", label: "Viagens", icon: Plane },
   { to: "/dashboard/passageiros", label: "Passageiros", icon: Users },
-] as const;
+];
 
 export function DashboardShell() {
   const agency = getAgencyBySlug(CURRENT_AGENCY_SLUG)!;
