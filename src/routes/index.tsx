@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles, ShieldCheck, Headphones } from "lucide-react";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
+import { ArrowRight, Sparkles, ShieldCheck, Headphones, Frown } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { SearchBar } from "@/components/site/SearchBar";
@@ -7,8 +9,15 @@ import { TripCard } from "@/components/site/TripCard";
 import { TRIPS } from "@/data/trips";
 import heroBeach from "@/assets/hero-beach.jpg";
 
+const searchSchema = z.object({
+  destino: fallback(z.string(), "").default(""),
+  mes: fallback(z.string(), "").default(""),
+  precoMax: fallback(z.number(), 5000).default(5000),
+});
+
 export const Route = createFileRoute("/")({
   component: Index,
+  validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
       { title: "TapTur — Viagens e excursões com as melhores agências do Brasil" },
@@ -28,8 +37,24 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const { destino, mes, precoMax } = Route.useSearch();
+
+  const filtered = TRIPS.filter((t) => {
+    if (destino) {
+      const term = destino.toLowerCase().split(",")[0].trim();
+      if (
+        !t.destination.toLowerCase().includes(term) &&
+        !t.state.toLowerCase().includes(term)
+      )
+        return false;
+    }
+    if (mes && !t.departureDate.startsWith(mes)) return false;
+    if (t.priceAdult > precoMax) return false;
+    return true;
+  });
+
   const featured = TRIPS.slice(0, 3);
-  const all = TRIPS;
+  const hasFilters = !!destino || !!mes || precoMax !== 5000;
 
   return (
     <div className="min-h-screen bg-background">
@@ -66,74 +91,111 @@ function Index() {
           </div>
 
           <div className="relative z-10 mt-10 md:-mt-8">
-            <SearchBar />
+            <SearchBar initial={{ destino, mes, precoMax }} />
           </div>
         </div>
       </section>
 
-      {/* Destaques */}
-      <section id="destaques" className="mx-auto max-w-7xl px-6 pt-24">
+      {/* Destaques (only when no filters) */}
+      {!hasFilters && (
+        <section id="destaques" className="mx-auto max-w-7xl px-6 pt-24">
+          <div className="flex items-end justify-between gap-6">
+            <div>
+              <p className="text-sm font-medium text-accent">Em destaque</p>
+              <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight md:text-4xl">
+                Viagens que estão bombando
+              </h2>
+            </div>
+            <a
+              href="#todas"
+              className="hidden items-center gap-1 text-sm font-medium text-foreground hover:text-accent md:inline-flex"
+            >
+              Ver todas <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+
+          <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((t) => (
+              <TripCard key={t.id} trip={t} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Por que TapTur — only when no filters */}
+      {!hasFilters && (
+        <section id="sobre" className="mx-auto max-w-7xl px-6 pt-32">
+          <div className="grid gap-12 md:grid-cols-3">
+            <Benefit
+              icon={<ShieldCheck className="h-5 w-5" />}
+              title="Agências verificadas"
+              body="Todas as agências passam por validação. Seu dinheiro e sua viagem estão sempre seguros."
+            />
+            <Benefit
+              icon={<Sparkles className="h-5 w-5" />}
+              title="Escolha seu assento"
+              body="Mapa de assentos em tempo real. Reserve seu lugar favorito em segundos."
+            />
+            <Benefit
+              icon={<Headphones className="h-5 w-5" />}
+              title="Suporte humano"
+              body="Atendimento de verdade, 7 dias por semana. Fale com quem entende de viagem."
+            />
+          </div>
+        </section>
+      )}
+
+      {/* Resultados */}
+      <section id="todas" className={"mx-auto max-w-7xl px-6 " + (hasFilters ? "pt-16" : "pt-32")}>
         <div className="flex items-end justify-between gap-6">
           <div>
-            <p className="text-sm font-medium text-accent">Em destaque</p>
+            <p className="text-sm font-medium text-accent">
+              {hasFilters ? "Resultados da busca" : "Explore"}
+            </p>
             <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight md:text-4xl">
-              Viagens que estão bombando
+              {hasFilters
+                ? `${filtered.length} ${filtered.length === 1 ? "viagem encontrada" : "viagens encontradas"}`
+                : "Todas as viagens disponíveis"}
             </h2>
           </div>
-          <a
-            href="#todas"
-            className="hidden items-center gap-1 text-sm font-medium text-foreground hover:text-accent md:inline-flex"
-          >
-            Ver todas <ArrowRight className="h-4 w-4" />
-          </a>
+
+          {hasFilters && (
+            <Link
+              to="/"
+              search={{ destino: "", mes: "", precoMax: 5000 }}
+              className="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline-block"
+            >
+              Limpar filtros
+            </Link>
+          )}
         </div>
 
-        <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((t) => (
-            <TripCard key={t.id} trip={t} />
-          ))}
-        </div>
-      </section>
-
-      {/* Por que TapTur */}
-      <section id="sobre" className="mx-auto max-w-7xl px-6 pt-32">
-        <div className="grid gap-12 md:grid-cols-3">
-          <Benefit
-            icon={<ShieldCheck className="h-5 w-5" />}
-            title="Agências verificadas"
-            body="Todas as agências passam por validação. Seu dinheiro e sua viagem estão sempre seguros."
-          />
-          <Benefit
-            icon={<Sparkles className="h-5 w-5" />}
-            title="Escolha seu assento"
-            body="Mapa de assentos em tempo real. Reserve seu lugar favorito em segundos."
-          />
-          <Benefit
-            icon={<Headphones className="h-5 w-5" />}
-            title="Suporte humano"
-            body="Atendimento de verdade, 7 dias por semana. Fale com quem entende de viagem."
-          />
-        </div>
-      </section>
-
-      {/* Todas */}
-      <section id="todas" className="mx-auto max-w-7xl px-6 pt-32">
-        <div>
-          <p className="text-sm font-medium text-accent">Explore</p>
-          <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight md:text-4xl">
-            Todas as viagens disponíveis
-          </h2>
-          <p className="mt-3 max-w-xl text-muted-foreground">
-            Selecionamos experiências únicas em destinos incríveis. Escolha a sua e reserve em
-            poucos cliques.
-          </p>
-        </div>
-
-        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {all.map((t) => (
-            <TripCard key={t.id} trip={t} />
-          ))}
-        </div>
+        {filtered.length === 0 ? (
+          <div className="mt-12 rounded-3xl border border-border bg-surface p-16 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-muted-foreground">
+              <Frown className="h-6 w-6" />
+            </div>
+            <h3 className="mt-4 font-display text-xl font-semibold">
+              Nenhuma viagem encontrada
+            </h3>
+            <p className="mt-2 text-muted-foreground">
+              Tente ajustar os filtros ou explorar outras datas.
+            </p>
+            <Link
+              to="/"
+              search={{ destino: "", mes: "", precoMax: 5000 }}
+              className="mt-6 inline-block rounded-full bg-foreground px-5 py-2 text-sm font-semibold text-background"
+            >
+              Ver todas as viagens
+            </Link>
+          </div>
+        ) : (
+          <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((t) => (
+              <TripCard key={t.id} trip={t} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* CTA agências */}
@@ -148,12 +210,12 @@ function Index() {
               A TapTur é o sistema completo para agências de viagem: vendas online, controle de
               assentos, financeiro e página própria para sua marca.
             </p>
-            <button
-              type="button"
+            <Link
+              to="/dashboard"
               className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-95"
             >
-              Cadastrar minha agência <ArrowRight className="h-4 w-4" />
-            </button>
+              Acessar dashboard <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
           <div
             aria-hidden

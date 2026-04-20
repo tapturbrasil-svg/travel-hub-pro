@@ -9,15 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as ViagemSlugRouteImport } from './routes/viagem.$slug'
 import { Route as ReservaConfirmadaSlugRouteImport } from './routes/reserva-confirmada.$slug'
+import { Route as DashboardPassageirosRouteImport } from './routes/dashboard.passageiros'
 import { Route as CheckoutSlugRouteImport } from './routes/checkout.$slug'
+import { Route as AgenciaSlugRouteImport } from './routes/agencia.$slug'
+import { Route as DashboardViagensIndexRouteImport } from './routes/dashboard.viagens.index'
+import { Route as DashboardViagensNovaRouteImport } from './routes/dashboard.viagens.nova'
+import { Route as DashboardViagensTripIdRouteImport } from './routes/dashboard.viagens.$tripId'
 
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const ViagemSlugRoute = ViagemSlugRouteImport.update({
   id: '/viagem/$slug',
@@ -29,50 +46,121 @@ const ReservaConfirmadaSlugRoute = ReservaConfirmadaSlugRouteImport.update({
   path: '/reserva-confirmada/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardPassageirosRoute = DashboardPassageirosRouteImport.update({
+  id: '/passageiros',
+  path: '/passageiros',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const CheckoutSlugRoute = CheckoutSlugRouteImport.update({
   id: '/checkout/$slug',
   path: '/checkout/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgenciaSlugRoute = AgenciaSlugRouteImport.update({
+  id: '/agencia/$slug',
+  path: '/agencia/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardViagensIndexRoute = DashboardViagensIndexRouteImport.update({
+  id: '/viagens/',
+  path: '/viagens/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardViagensNovaRoute = DashboardViagensNovaRouteImport.update({
+  id: '/viagens/nova',
+  path: '/viagens/nova',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardViagensTripIdRoute = DashboardViagensTripIdRouteImport.update({
+  id: '/viagens/$tripId',
+  path: '/viagens/$tripId',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/agencia/$slug': typeof AgenciaSlugRoute
   '/checkout/$slug': typeof CheckoutSlugRoute
+  '/dashboard/passageiros': typeof DashboardPassageirosRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/viagens/$tripId': typeof DashboardViagensTripIdRoute
+  '/dashboard/viagens/nova': typeof DashboardViagensNovaRoute
+  '/dashboard/viagens/': typeof DashboardViagensIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agencia/$slug': typeof AgenciaSlugRoute
   '/checkout/$slug': typeof CheckoutSlugRoute
+  '/dashboard/passageiros': typeof DashboardPassageirosRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
+  '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/viagens/$tripId': typeof DashboardViagensTripIdRoute
+  '/dashboard/viagens/nova': typeof DashboardViagensNovaRoute
+  '/dashboard/viagens': typeof DashboardViagensIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/agencia/$slug': typeof AgenciaSlugRoute
   '/checkout/$slug': typeof CheckoutSlugRoute
+  '/dashboard/passageiros': typeof DashboardPassageirosRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/viagens/$tripId': typeof DashboardViagensTripIdRoute
+  '/dashboard/viagens/nova': typeof DashboardViagensNovaRoute
+  '/dashboard/viagens/': typeof DashboardViagensIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dashboard'
+    | '/agencia/$slug'
     | '/checkout/$slug'
+    | '/dashboard/passageiros'
     | '/reserva-confirmada/$slug'
     | '/viagem/$slug'
+    | '/dashboard/'
+    | '/dashboard/viagens/$tripId'
+    | '/dashboard/viagens/nova'
+    | '/dashboard/viagens/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/checkout/$slug' | '/reserva-confirmada/$slug' | '/viagem/$slug'
+  to:
+    | '/'
+    | '/agencia/$slug'
+    | '/checkout/$slug'
+    | '/dashboard/passageiros'
+    | '/reserva-confirmada/$slug'
+    | '/viagem/$slug'
+    | '/dashboard'
+    | '/dashboard/viagens/$tripId'
+    | '/dashboard/viagens/nova'
+    | '/dashboard/viagens'
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
+    | '/agencia/$slug'
     | '/checkout/$slug'
+    | '/dashboard/passageiros'
     | '/reserva-confirmada/$slug'
     | '/viagem/$slug'
+    | '/dashboard/'
+    | '/dashboard/viagens/$tripId'
+    | '/dashboard/viagens/nova'
+    | '/dashboard/viagens/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
+  AgenciaSlugRoute: typeof AgenciaSlugRoute
   CheckoutSlugRoute: typeof CheckoutSlugRoute
   ReservaConfirmadaSlugRoute: typeof ReservaConfirmadaSlugRoute
   ViagemSlugRoute: typeof ViagemSlugRoute
@@ -80,12 +168,26 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/viagem/$slug': {
       id: '/viagem/$slug'
@@ -101,6 +203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReservaConfirmadaSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/passageiros': {
+      id: '/dashboard/passageiros'
+      path: '/passageiros'
+      fullPath: '/dashboard/passageiros'
+      preLoaderRoute: typeof DashboardPassageirosRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/checkout/$slug': {
       id: '/checkout/$slug'
       path: '/checkout/$slug'
@@ -108,11 +217,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agencia/$slug': {
+      id: '/agencia/$slug'
+      path: '/agencia/$slug'
+      fullPath: '/agencia/$slug'
+      preLoaderRoute: typeof AgenciaSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/viagens/': {
+      id: '/dashboard/viagens/'
+      path: '/viagens'
+      fullPath: '/dashboard/viagens/'
+      preLoaderRoute: typeof DashboardViagensIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/viagens/nova': {
+      id: '/dashboard/viagens/nova'
+      path: '/viagens/nova'
+      fullPath: '/dashboard/viagens/nova'
+      preLoaderRoute: typeof DashboardViagensNovaRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/viagens/$tripId': {
+      id: '/dashboard/viagens/$tripId'
+      path: '/viagens/$tripId'
+      fullPath: '/dashboard/viagens/$tripId'
+      preLoaderRoute: typeof DashboardViagensTripIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
+interface DashboardRouteChildren {
+  DashboardPassageirosRoute: typeof DashboardPassageirosRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardViagensTripIdRoute: typeof DashboardViagensTripIdRoute
+  DashboardViagensNovaRoute: typeof DashboardViagensNovaRoute
+  DashboardViagensIndexRoute: typeof DashboardViagensIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardPassageirosRoute: DashboardPassageirosRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardViagensTripIdRoute: DashboardViagensTripIdRoute,
+  DashboardViagensNovaRoute: DashboardViagensNovaRoute,
+  DashboardViagensIndexRoute: DashboardViagensIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRouteWithChildren,
+  AgenciaSlugRoute: AgenciaSlugRoute,
   CheckoutSlugRoute: CheckoutSlugRoute,
   ReservaConfirmadaSlugRoute: ReservaConfirmadaSlugRoute,
   ViagemSlugRoute: ViagemSlugRoute,
