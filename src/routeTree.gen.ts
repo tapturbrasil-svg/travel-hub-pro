@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ViagemSlugRouteImport } from './routes/viagem.$slug'
 import { Route as ReservaConfirmadaSlugRouteImport } from './routes/reserva-confirmada.$slug'
 import { Route as CheckoutSlugRouteImport } from './routes/checkout.$slug'
+import { Route as AgenciaSlugRouteImport } from './routes/agencia.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,15 +35,22 @@ const CheckoutSlugRoute = CheckoutSlugRouteImport.update({
   path: '/checkout/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgenciaSlugRoute = AgenciaSlugRouteImport.update({
+  id: '/agencia/$slug',
+  path: '/agencia/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agencia/$slug': typeof AgenciaSlugRoute
   '/checkout/$slug': typeof CheckoutSlugRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agencia/$slug': typeof AgenciaSlugRoute
   '/checkout/$slug': typeof CheckoutSlugRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
@@ -50,6 +58,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agencia/$slug': typeof AgenciaSlugRoute
   '/checkout/$slug': typeof CheckoutSlugRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
@@ -58,14 +67,21 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/agencia/$slug'
     | '/checkout/$slug'
     | '/reserva-confirmada/$slug'
     | '/viagem/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/checkout/$slug' | '/reserva-confirmada/$slug' | '/viagem/$slug'
+  to:
+    | '/'
+    | '/agencia/$slug'
+    | '/checkout/$slug'
+    | '/reserva-confirmada/$slug'
+    | '/viagem/$slug'
   id:
     | '__root__'
     | '/'
+    | '/agencia/$slug'
     | '/checkout/$slug'
     | '/reserva-confirmada/$slug'
     | '/viagem/$slug'
@@ -73,6 +89,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgenciaSlugRoute: typeof AgenciaSlugRoute
   CheckoutSlugRoute: typeof CheckoutSlugRoute
   ReservaConfirmadaSlugRoute: typeof ReservaConfirmadaSlugRoute
   ViagemSlugRoute: typeof ViagemSlugRoute
@@ -108,11 +125,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agencia/$slug': {
+      id: '/agencia/$slug'
+      path: '/agencia/$slug'
+      fullPath: '/agencia/$slug'
+      preLoaderRoute: typeof AgenciaSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgenciaSlugRoute: AgenciaSlugRoute,
   CheckoutSlugRoute: CheckoutSlugRoute,
   ReservaConfirmadaSlugRoute: ReservaConfirmadaSlugRoute,
   ViagemSlugRoute: ViagemSlugRoute,
@@ -120,3 +145,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
