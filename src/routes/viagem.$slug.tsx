@@ -69,7 +69,16 @@ function TripPage() {
         <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight md:text-5xl">
           {trip.destination} — {trip.nights} noites
         </h1>
-        <p className="mt-2 text-muted-foreground">Operado por {trip.agency}</p>
+        <p className="mt-2 text-muted-foreground">
+          Operado por{" "}
+          <Link
+            to="/agencia/$slug"
+            params={{ slug: trip.agencySlug }}
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            {trip.agency}
+          </Link>
+        </p>
       </div>
 
       {/* Gallery */}
