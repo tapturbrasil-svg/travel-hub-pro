@@ -39,8 +39,8 @@ function CheckoutPage() {
     return seats * trip.priceAdult + (withHotel ? 0 : -200 * seats);
   }, [selectedSeats, trip.priceAdult, withHotel]);
 
-  const goNext = () => setStep((s) => Math.min(4, (s + 1) as Step));
-  const goBack = () => setStep((s) => Math.max(1, (s - 1) as Step));
+  const goNext = () => setStep((s) => Math.min(4, s + 1) as Step);
+  const goBack = () => setStep((s) => Math.max(1, s - 1) as Step);
 
   const canProceed =
     (step === 1 && selectedSeats.length > 0) ||

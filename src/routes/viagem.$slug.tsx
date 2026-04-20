@@ -2,11 +2,11 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Star, MapPin, Calendar, Bus, Hotel, Check, ArrowLeft } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { getTripBySlug, formatBRL, formatDate } from "@/data/trips";
+import { getTripBySlug, formatBRL, formatDate, type Trip } from "@/data/trips";
 
 export const Route = createFileRoute("/viagem/$slug")({
   component: TripPage,
-  loader: ({ params }) => {
+  loader: ({ params }): { trip: Trip } => {
     const trip = getTripBySlug(params.slug);
     if (!trip) throw notFound();
     return { trip };
