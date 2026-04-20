@@ -27,7 +27,7 @@ type Passenger = {
 };
 
 function CheckoutPage() {
-  const { trip } = Route.useLoaderData();
+  const { trip } = Route.useLoaderData() as { trip: Trip };
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>(1);
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
