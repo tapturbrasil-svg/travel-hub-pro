@@ -17,7 +17,7 @@ export const Route = createFileRoute("/reserva-confirmada/$slug")({
 });
 
 function Confirmed() {
-  const { trip } = Route.useLoaderData();
+  const { trip } = Route.useLoaderData() as { trip: Trip };
   const code = "TT" + Math.floor(Math.random() * 900000 + 100000);
 
   return (
