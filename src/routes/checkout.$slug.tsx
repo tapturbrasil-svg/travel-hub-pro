@@ -209,7 +209,7 @@ function CheckoutPage() {
   const canProceed = (() => {
     if (step === 1) return adults + children.length > 0;
     if (step === 2) return selectedSeats.length === seatsNeeded;
-    if (step === 3) return !includesLodging || !!selectedRoomId;
+    if (step === 3) return hotelValid;
     if (step === 4)
       return passengers.every(
         (p) => (p?.name ?? "").trim().length > 1 && (p?.document ?? "").trim().length > 3,
@@ -274,9 +274,9 @@ function CheckoutPage() {
             {step === 3 && includesLodging && (
               <StepHotel
                 trip={trip}
-                selectedRoomId={selectedRoomId}
-                setSelectedRoomId={setSelectedRoomId}
-                payingHeads={categories.filter((c) => c !== "child_lap").length}
+                selections={roomSelections}
+                setSelections={setRoomSelections}
+                passengers={passengers}
               />
             )}
 
@@ -343,17 +343,23 @@ function CheckoutPage() {
                     success
                   />
                 )}
-                {includesLodging && selectedRoom && selectedRoom.pricePerPerson !== 0 && (
-                  <SummaryRow
-                    label={selectedRoom.name}
-                    value={`${selectedRoom.pricePerPerson > 0 ? "+" : "−"}${formatBRL(
-                      Math.abs(
-                        selectedRoom.pricePerPerson *
-                          categories.filter((c) => c !== "child_lap").length,
-                      ),
-                    )}`}
-                  />
-                )}
+                {includesLodging &&
+                  roomSelections.map((sel, i) => {
+                    const room = trip.hotel.rooms.find((r) => r.id === sel.roomId);
+                    if (!room || sel.occupants.length === 0) return null;
+                    const adj = room.pricePerPerson * sel.occupants.length;
+                    return (
+                      <SummaryRow
+                        key={i}
+                        label={`${room.name} (${sel.occupants.length}p)`}
+                        value={
+                          adj === 0
+                            ? "Padrão"
+                            : `${adj > 0 ? "+" : "−"}${formatBRL(Math.abs(adj))}`
+                        }
+                      />
+                    );
+                  })}
 
                 <div className="flex justify-between border-t border-border pt-3 text-base font-semibold">
                   <span>Total</span>
