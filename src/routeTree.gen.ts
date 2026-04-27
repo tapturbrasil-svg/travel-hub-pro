@@ -25,6 +25,7 @@ import { Route as DashboardPassageirosRouteImport } from './routes/dashboard.pas
 import { Route as DashboardLeadsRouteImport } from './routes/dashboard.leads'
 import { Route as DashboardLandingPageRouteImport } from './routes/dashboard.landing-page'
 import { Route as DashboardItinerariosRouteImport } from './routes/dashboard.itinerarios'
+import { Route as DashboardHospedagensRouteImport } from './routes/dashboard.hospedagens'
 import { Route as DashboardFinanceiroRouteImport } from './routes/dashboard.financeiro'
 import { Route as DashboardConfiguracoesRouteImport } from './routes/dashboard.configuracoes'
 import { Route as ContaVouchersRouteImport } from './routes/conta.vouchers'
@@ -117,6 +118,11 @@ const DashboardItinerariosRoute = DashboardItinerariosRouteImport.update({
   path: '/itinerarios',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardHospedagensRoute = DashboardHospedagensRouteImport.update({
+  id: '/hospedagens',
+  path: '/hospedagens',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardFinanceiroRoute = DashboardFinanceiroRouteImport.update({
   id: '/financeiro',
   path: '/financeiro',
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/conta/vouchers': typeof ContaVouchersRoute
   '/dashboard/configuracoes': typeof DashboardConfiguracoesRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
+  '/dashboard/hospedagens': typeof DashboardHospedagensRoute
   '/dashboard/itinerarios': typeof DashboardItinerariosRoute
   '/dashboard/landing-page': typeof DashboardLandingPageRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/conta/vouchers': typeof ContaVouchersRoute
   '/dashboard/configuracoes': typeof DashboardConfiguracoesRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
+  '/dashboard/hospedagens': typeof DashboardHospedagensRoute
   '/dashboard/itinerarios': typeof DashboardItinerariosRoute
   '/dashboard/landing-page': typeof DashboardLandingPageRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
@@ -242,6 +250,7 @@ export interface FileRoutesById {
   '/conta/vouchers': typeof ContaVouchersRoute
   '/dashboard/configuracoes': typeof DashboardConfiguracoesRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
+  '/dashboard/hospedagens': typeof DashboardHospedagensRoute
   '/dashboard/itinerarios': typeof DashboardItinerariosRoute
   '/dashboard/landing-page': typeof DashboardLandingPageRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
@@ -273,6 +282,7 @@ export interface FileRouteTypes {
     | '/conta/vouchers'
     | '/dashboard/configuracoes'
     | '/dashboard/financeiro'
+    | '/dashboard/hospedagens'
     | '/dashboard/itinerarios'
     | '/dashboard/landing-page'
     | '/dashboard/leads'
@@ -300,6 +310,7 @@ export interface FileRouteTypes {
     | '/conta/vouchers'
     | '/dashboard/configuracoes'
     | '/dashboard/financeiro'
+    | '/dashboard/hospedagens'
     | '/dashboard/itinerarios'
     | '/dashboard/landing-page'
     | '/dashboard/leads'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/conta/vouchers'
     | '/dashboard/configuracoes'
     | '/dashboard/financeiro'
+    | '/dashboard/hospedagens'
     | '/dashboard/itinerarios'
     | '/dashboard/landing-page'
     | '/dashboard/leads'
@@ -471,6 +483,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardItinerariosRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/hospedagens': {
+      id: '/dashboard/hospedagens'
+      path: '/hospedagens'
+      fullPath: '/dashboard/hospedagens'
+      preLoaderRoute: typeof DashboardHospedagensRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/financeiro': {
       id: '/dashboard/financeiro'
       path: '/financeiro'
@@ -572,6 +591,7 @@ const ContaRouteWithChildren = ContaRoute._addFileChildren(ContaRouteChildren)
 interface DashboardRouteChildren {
   DashboardConfiguracoesRoute: typeof DashboardConfiguracoesRoute
   DashboardFinanceiroRoute: typeof DashboardFinanceiroRoute
+  DashboardHospedagensRoute: typeof DashboardHospedagensRoute
   DashboardItinerariosRoute: typeof DashboardItinerariosRoute
   DashboardLandingPageRoute: typeof DashboardLandingPageRoute
   DashboardLeadsRoute: typeof DashboardLeadsRoute
@@ -590,6 +610,7 @@ interface DashboardRouteChildren {
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardConfiguracoesRoute: DashboardConfiguracoesRoute,
   DashboardFinanceiroRoute: DashboardFinanceiroRoute,
+  DashboardHospedagensRoute: DashboardHospedagensRoute,
   DashboardItinerariosRoute: DashboardItinerariosRoute,
   DashboardLandingPageRoute: DashboardLandingPageRoute,
   DashboardLeadsRoute: DashboardLeadsRoute,
