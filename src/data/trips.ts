@@ -82,7 +82,18 @@ export const TRIPS: Trip[] = [
       "City Tour com guia local",
       "Seguro viagem completo",
     ],
-    hotel: { name: "Hotel Atlântico Copacabana", stars: 4, meal: "Café da manhã" },
+    packageType: "flexible",
+    hotelDiscount: 280,
+    hotel: {
+      name: "Hotel Atlântico Copacabana",
+      stars: 4,
+      meal: "Café da manhã",
+      rooms: [
+        { id: "single", name: "Quarto Single", capacity: 1, pricePerPerson: 0, description: "Privacidade total para você." },
+        { id: "double", name: "Quarto Duplo", capacity: 2, pricePerPerson: -120, description: "Cama de casal ou duas solteiros." },
+        { id: "triple", name: "Quarto Triplo", capacity: 3, pricePerPerson: -180, description: "Ideal para grupos e famílias." },
+      ],
+    },
   },
   {
     id: "t2",
@@ -114,7 +125,17 @@ export const TRIPS: Trip[] = [
       "Passeio de escuna",
       "Seguro viagem",
     ],
-    hotel: { name: "Pousada Mar Azul", stars: 4, meal: "Café da manhã" },
+    packageType: "full",
+    hotel: {
+      name: "Pousada Mar Azul",
+      stars: 4,
+      meal: "Café da manhã",
+      rooms: [
+        { id: "double", name: "Quarto Duplo Vista Mar", capacity: 2, pricePerPerson: 0, description: "Sacada com vista para o mar." },
+        { id: "triple", name: "Quarto Triplo Standard", capacity: 3, pricePerPerson: -90, description: "Acomoda até 3 pessoas." },
+        { id: "family", name: "Quarto Família", capacity: 4, pricePerPerson: -140, description: "Para famílias com crianças." },
+      ],
+    },
   },
   {
     id: "t3",
@@ -146,7 +167,17 @@ export const TRIPS: Trip[] = [
       "Passeio para Arraial d'Ajuda",
       "Seguro viagem",
     ],
-    hotel: { name: "Resort Coroa Vermelha", stars: 5, meal: "All inclusive" },
+    packageType: "full",
+    hotel: {
+      name: "Resort Coroa Vermelha",
+      stars: 5,
+      meal: "All inclusive",
+      rooms: [
+        { id: "double-lux", name: "Suíte Luxo Casal", capacity: 2, pricePerPerson: 0, description: "Suíte com hidromassagem." },
+        { id: "triple", name: "Suíte Triplo", capacity: 3, pricePerPerson: -150, description: "Espaço amplo e varanda." },
+        { id: "family", name: "Suíte Família", capacity: 4, pricePerPerson: -220, description: "Pensada para crianças e adultos." },
+      ],
+    },
   },
   {
     id: "t4",
@@ -178,7 +209,17 @@ export const TRIPS: Trip[] = [
       "Tour pelas vinícolas",
       "Seguro viagem",
     ],
-    hotel: { name: "Hotel Bavária Boutique", stars: 4, meal: "Café colonial" },
+    packageType: "flexible",
+    hotelDiscount: 320,
+    hotel: {
+      name: "Hotel Bavária Boutique",
+      stars: 4,
+      meal: "Café colonial",
+      rooms: [
+        { id: "double", name: "Chalé Duplo", capacity: 2, pricePerPerson: 0, description: "Lareira e varanda privativa." },
+        { id: "triple", name: "Chalé Triplo", capacity: 3, pricePerPerson: -110, description: "Para amigos ou família." },
+      ],
+    },
   },
   {
     id: "t5",
@@ -210,7 +251,17 @@ export const TRIPS: Trip[] = [
       "City tour por Maceió",
       "Seguro viagem",
     ],
-    hotel: { name: "Hotel Praia Bonita", stars: 4, meal: "Pensão completa" },
+    packageType: "full",
+    hotel: {
+      name: "Hotel Praia Bonita",
+      stars: 4,
+      meal: "Pensão completa",
+      rooms: [
+        { id: "double", name: "Apartamento Duplo", capacity: 2, pricePerPerson: 0, description: "Pé na areia." },
+        { id: "triple", name: "Apartamento Triplo", capacity: 3, pricePerPerson: -100, description: "Boa opção para amigos." },
+        { id: "family", name: "Apartamento Família", capacity: 4, pricePerPerson: -160, description: "Para famílias." },
+      ],
+    },
   },
   {
     id: "t6",
@@ -242,7 +293,16 @@ export const TRIPS: Trip[] = [
       "Buggy tour completo",
       "Seguro viagem",
     ],
-    hotel: { name: "Pousada Vila do Vento", stars: 5, meal: "Café da manhã" },
+    packageType: "full",
+    hotel: {
+      name: "Pousada Vila do Vento",
+      stars: 5,
+      meal: "Café da manhã",
+      rooms: [
+        { id: "double", name: "Bangalô Duplo", capacity: 2, pricePerPerson: 0, description: "Decoração rústica chic." },
+        { id: "master", name: "Bangalô Master", capacity: 2, pricePerPerson: 280, description: "Vista para as dunas." },
+      ],
+    },
   },
 ];
 
