@@ -49,13 +49,13 @@ export function Header() {
           >
             <Search className="h-4 w-4" />
           </button>
-          <button
-            type="button"
+          <Link
+            to="/conta"
             className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground shadow-soft transition-all hover:shadow-card"
           >
             <User className="h-4 w-4" />
-            <span className="hidden sm:inline">Entrar</span>
-          </button>
+            <span className="hidden sm:inline">Minha conta</span>
+          </Link>
         </div>
       </div>
     </header>

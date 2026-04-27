@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ContaRouteImport } from './routes/conta'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as ContaIndexRouteImport } from './routes/conta.index'
 import { Route as ViagemSlugRouteImport } from './routes/viagem.$slug'
 import { Route as ReservaConfirmadaSlugRouteImport } from './routes/reserva-confirmada.$slug'
 import { Route as DashboardPassageirosRouteImport } from './routes/dashboard.passageiros'
+import { Route as ContaVouchersRouteImport } from './routes/conta.vouchers'
+import { Route as ContaViagensRouteImport } from './routes/conta.viagens'
+import { Route as ContaRifasRouteImport } from './routes/conta.rifas'
+import { Route as ContaDescontosRouteImport } from './routes/conta.descontos'
 import { Route as CheckoutSlugRouteImport } from './routes/checkout.$slug'
 import { Route as AgenciaSlugRouteImport } from './routes/agencia.$slug'
 import { Route as DashboardViagensIndexRouteImport } from './routes/dashboard.viagens.index'
@@ -26,6 +32,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContaRoute = ContaRouteImport.update({
+  id: '/conta',
+  path: '/conta',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -35,6 +46,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const ContaIndexRoute = ContaIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ContaRoute,
 } as any)
 const ViagemSlugRoute = ViagemSlugRouteImport.update({
   id: '/viagem/$slug',
@@ -50,6 +66,26 @@ const DashboardPassageirosRoute = DashboardPassageirosRouteImport.update({
   id: '/passageiros',
   path: '/passageiros',
   getParentRoute: () => DashboardRoute,
+} as any)
+const ContaVouchersRoute = ContaVouchersRouteImport.update({
+  id: '/vouchers',
+  path: '/vouchers',
+  getParentRoute: () => ContaRoute,
+} as any)
+const ContaViagensRoute = ContaViagensRouteImport.update({
+  id: '/viagens',
+  path: '/viagens',
+  getParentRoute: () => ContaRoute,
+} as any)
+const ContaRifasRoute = ContaRifasRouteImport.update({
+  id: '/rifas',
+  path: '/rifas',
+  getParentRoute: () => ContaRoute,
+} as any)
+const ContaDescontosRoute = ContaDescontosRouteImport.update({
+  id: '/descontos',
+  path: '/descontos',
+  getParentRoute: () => ContaRoute,
 } as any)
 const CheckoutSlugRoute = CheckoutSlugRouteImport.update({
   id: '/checkout/$slug',
@@ -79,12 +115,18 @@ const DashboardViagensTripIdRoute = DashboardViagensTripIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/conta': typeof ContaRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/agencia/$slug': typeof AgenciaSlugRoute
   '/checkout/$slug': typeof CheckoutSlugRoute
+  '/conta/descontos': typeof ContaDescontosRoute
+  '/conta/rifas': typeof ContaRifasRoute
+  '/conta/viagens': typeof ContaViagensRoute
+  '/conta/vouchers': typeof ContaVouchersRoute
   '/dashboard/passageiros': typeof DashboardPassageirosRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
+  '/conta/': typeof ContaIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/viagens/$tripId': typeof DashboardViagensTripIdRoute
   '/dashboard/viagens/nova': typeof DashboardViagensNovaRoute
@@ -94,9 +136,14 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agencia/$slug': typeof AgenciaSlugRoute
   '/checkout/$slug': typeof CheckoutSlugRoute
+  '/conta/descontos': typeof ContaDescontosRoute
+  '/conta/rifas': typeof ContaRifasRoute
+  '/conta/viagens': typeof ContaViagensRoute
+  '/conta/vouchers': typeof ContaVouchersRoute
   '/dashboard/passageiros': typeof DashboardPassageirosRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
+  '/conta': typeof ContaIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/viagens/$tripId': typeof DashboardViagensTripIdRoute
   '/dashboard/viagens/nova': typeof DashboardViagensNovaRoute
@@ -105,12 +152,18 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/conta': typeof ContaRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/agencia/$slug': typeof AgenciaSlugRoute
   '/checkout/$slug': typeof CheckoutSlugRoute
+  '/conta/descontos': typeof ContaDescontosRoute
+  '/conta/rifas': typeof ContaRifasRoute
+  '/conta/viagens': typeof ContaViagensRoute
+  '/conta/vouchers': typeof ContaVouchersRoute
   '/dashboard/passageiros': typeof DashboardPassageirosRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
+  '/conta/': typeof ContaIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/viagens/$tripId': typeof DashboardViagensTripIdRoute
   '/dashboard/viagens/nova': typeof DashboardViagensNovaRoute
@@ -120,12 +173,18 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/conta'
     | '/dashboard'
     | '/agencia/$slug'
     | '/checkout/$slug'
+    | '/conta/descontos'
+    | '/conta/rifas'
+    | '/conta/viagens'
+    | '/conta/vouchers'
     | '/dashboard/passageiros'
     | '/reserva-confirmada/$slug'
     | '/viagem/$slug'
+    | '/conta/'
     | '/dashboard/'
     | '/dashboard/viagens/$tripId'
     | '/dashboard/viagens/nova'
@@ -135,9 +194,14 @@ export interface FileRouteTypes {
     | '/'
     | '/agencia/$slug'
     | '/checkout/$slug'
+    | '/conta/descontos'
+    | '/conta/rifas'
+    | '/conta/viagens'
+    | '/conta/vouchers'
     | '/dashboard/passageiros'
     | '/reserva-confirmada/$slug'
     | '/viagem/$slug'
+    | '/conta'
     | '/dashboard'
     | '/dashboard/viagens/$tripId'
     | '/dashboard/viagens/nova'
@@ -145,12 +209,18 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/conta'
     | '/dashboard'
     | '/agencia/$slug'
     | '/checkout/$slug'
+    | '/conta/descontos'
+    | '/conta/rifas'
+    | '/conta/viagens'
+    | '/conta/vouchers'
     | '/dashboard/passageiros'
     | '/reserva-confirmada/$slug'
     | '/viagem/$slug'
+    | '/conta/'
     | '/dashboard/'
     | '/dashboard/viagens/$tripId'
     | '/dashboard/viagens/nova'
@@ -159,6 +229,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ContaRoute: typeof ContaRouteWithChildren
   DashboardRoute: typeof DashboardRouteWithChildren
   AgenciaSlugRoute: typeof AgenciaSlugRoute
   CheckoutSlugRoute: typeof CheckoutSlugRoute
@@ -175,6 +246,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/conta': {
+      id: '/conta'
+      path: '/conta'
+      fullPath: '/conta'
+      preLoaderRoute: typeof ContaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -188,6 +266,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/conta/': {
+      id: '/conta/'
+      path: '/'
+      fullPath: '/conta/'
+      preLoaderRoute: typeof ContaIndexRouteImport
+      parentRoute: typeof ContaRoute
     }
     '/viagem/$slug': {
       id: '/viagem/$slug'
@@ -209,6 +294,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/passageiros'
       preLoaderRoute: typeof DashboardPassageirosRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/conta/vouchers': {
+      id: '/conta/vouchers'
+      path: '/vouchers'
+      fullPath: '/conta/vouchers'
+      preLoaderRoute: typeof ContaVouchersRouteImport
+      parentRoute: typeof ContaRoute
+    }
+    '/conta/viagens': {
+      id: '/conta/viagens'
+      path: '/viagens'
+      fullPath: '/conta/viagens'
+      preLoaderRoute: typeof ContaViagensRouteImport
+      parentRoute: typeof ContaRoute
+    }
+    '/conta/rifas': {
+      id: '/conta/rifas'
+      path: '/rifas'
+      fullPath: '/conta/rifas'
+      preLoaderRoute: typeof ContaRifasRouteImport
+      parentRoute: typeof ContaRoute
+    }
+    '/conta/descontos': {
+      id: '/conta/descontos'
+      path: '/descontos'
+      fullPath: '/conta/descontos'
+      preLoaderRoute: typeof ContaDescontosRouteImport
+      parentRoute: typeof ContaRoute
     }
     '/checkout/$slug': {
       id: '/checkout/$slug'
@@ -248,6 +361,24 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ContaRouteChildren {
+  ContaDescontosRoute: typeof ContaDescontosRoute
+  ContaRifasRoute: typeof ContaRifasRoute
+  ContaViagensRoute: typeof ContaViagensRoute
+  ContaVouchersRoute: typeof ContaVouchersRoute
+  ContaIndexRoute: typeof ContaIndexRoute
+}
+
+const ContaRouteChildren: ContaRouteChildren = {
+  ContaDescontosRoute: ContaDescontosRoute,
+  ContaRifasRoute: ContaRifasRoute,
+  ContaViagensRoute: ContaViagensRoute,
+  ContaVouchersRoute: ContaVouchersRoute,
+  ContaIndexRoute: ContaIndexRoute,
+}
+
+const ContaRouteWithChildren = ContaRoute._addFileChildren(ContaRouteChildren)
+
 interface DashboardRouteChildren {
   DashboardPassageirosRoute: typeof DashboardPassageirosRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
@@ -270,6 +401,7 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ContaRoute: ContaRouteWithChildren,
   DashboardRoute: DashboardRouteWithChildren,
   AgenciaSlugRoute: AgenciaSlugRoute,
   CheckoutSlugRoute: CheckoutSlugRoute,
@@ -279,3 +411,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
