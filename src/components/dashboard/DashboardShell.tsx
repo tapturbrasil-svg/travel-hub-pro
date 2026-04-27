@@ -6,14 +6,37 @@ import {
   Plus,
   Bell,
   ChevronLeft,
+  Ticket,
+  Wallet,
+  Truck,
+  Building2,
+  MapPin,
+  Gift,
+  BarChart3,
+  UserPlus,
+  Palette,
+  UserCog,
+  Settings,
+  LogOut,
 } from "lucide-react";
 import { CURRENT_AGENCY_SLUG } from "@/data/dashboard";
 import { getAgencyBySlug } from "@/data/agencies";
 
 const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
-  { to: "/dashboard", label: "Visão geral", icon: LayoutDashboard, exact: true },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/dashboard/viagens", label: "Viagens", icon: Plane },
+  { to: "/dashboard/reservas", label: "Reservas", icon: Ticket },
   { to: "/dashboard/passageiros", label: "Passageiros", icon: Users },
+  { to: "/dashboard/financeiro", label: "Financeiro", icon: Wallet },
+  { to: "/dashboard/translados", label: "Translados", icon: Truck },
+  { to: "/dashboard/hospedagens", label: "Hospedagens", icon: Building2 },
+  { to: "/dashboard/itinerarios", label: "Itinerários", icon: MapPin },
+  { to: "/dashboard/rifas", label: "Rifas", icon: Gift },
+  { to: "/dashboard/relatorios", label: "Relatórios", icon: BarChart3 },
+  { to: "/dashboard/leads", label: "Leads", icon: UserPlus },
+  { to: "/dashboard/landing-page", label: "Landing Page", icon: Palette },
+  { to: "/dashboard/usuarios", label: "Usuários", icon: UserCog },
+  { to: "/dashboard/configuracoes", label: "Configurações", icon: Settings },
 ];
 
 export function DashboardShell() {
