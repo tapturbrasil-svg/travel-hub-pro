@@ -149,9 +149,9 @@ function CheckoutPage() {
   }, [categories, selectedSeats, includesTransport]);
 
   /* ---------- Cálculo do total ---------- */
-  const selectedRoom: Room | undefined = useMemo(
-    () => trip.hotel.rooms.find((r) => r.id === selectedRoomId),
-    [selectedRoomId, trip.hotel.rooms],
+  const payingHeads = useMemo(
+    () => categories.filter((c) => c !== "child_lap").length,
+    [categories],
   );
 
   const subtotal = useMemo(() => {
@@ -160,13 +160,27 @@ function CheckoutPage() {
 
   const lodgingAdjust = useMemo(() => {
     if (!includesLodging) return -(trip.hotelDiscount ?? 0) * adults;
-    if (!selectedRoom) return 0;
-    // pricePerPerson aplicada apenas a quem ocupa assento (cama)
-    const payingHeads = categories.filter((c) => c !== "child_lap").length;
-    return selectedRoom.pricePerPerson * payingHeads;
-  }, [includesLodging, trip.hotelDiscount, selectedRoom, categories, adults]);
+    // soma o ajuste de cada quarto selecionado, multiplicado pelos hóspedes alocados nele
+    return roomSelections.reduce((sum, sel) => {
+      const room = trip.hotel.rooms.find((r) => r.id === sel.roomId);
+      if (!room) return sum;
+      return sum + room.pricePerPerson * sel.occupants.length;
+    }, 0);
+  }, [includesLodging, trip.hotelDiscount, trip.hotel.rooms, roomSelections, adults]);
 
   const total = Math.max(0, subtotal + lodgingAdjust);
+
+  /** Validação do step de hotel: todos alocados E cada quarto cheio */
+  const hotelValid = useMemo(() => {
+    if (!includesLodging) return true;
+    if (roomSelections.length === 0) return false;
+    const allocated = roomSelections.reduce((s, r) => s + r.occupants.length, 0);
+    if (allocated !== payingHeads) return false;
+    return roomSelections.every((sel) => {
+      const room = trip.hotel.rooms.find((r) => r.id === sel.roomId);
+      return room && sel.occupants.length === room.capacity;
+    });
+  }, [includesLodging, roomSelections, payingHeads, trip.hotel.rooms]);
 
   /* ---------- Navegação dos passos ---------- */
   // Steps dinâmicos: 1 People, 2 Seats (se transporte), 3 Hotel (se lodging com escolha de quarto), 4 Passenger Data, 5 Pagamento
