@@ -795,90 +795,54 @@ function StepSeats({
 
 function StepHotel({
   trip,
-  selectedRoomId,
-  setSelectedRoomId,
-  payingHeads,
+  selections,
+  setSelections,
+  passengers,
 }: {
   trip: Trip;
-  selectedRoomId: string;
-  setSelectedRoomId: (id: string) => void;
-  payingHeads: number;
+  selections: RoomSelection[];
+  setSelections: (s: RoomSelection[]) => void;
+  passengers: Passenger[];
 }) {
+  // Apenas passageiros que precisam de cama (não colo)
+  const payingPassengers = passengers
+    .map((p, idx) => ({ p, idx }))
+    .filter(({ p }) => p.category !== "child_lap")
+    .map(({ p, idx }, i) => ({
+      label: p.name?.trim() || `Hóspede ${i + 1}`,
+      sub:
+        p.category === "adult"
+          ? "Adulto"
+          : p.category === "child_half"
+            ? "Criança · meia"
+            : "Criança",
+      _origIdx: idx,
+    }));
+
   return (
     <div>
       <h2 className="font-display text-2xl font-semibold tracking-tight">
-        Escolha seu quarto
+        Escolha seus quartos
       </h2>
       <p className="mt-2 text-muted-foreground">
         {trip.hotel.name} · {trip.hotel.stars}★ · {trip.hotel.meal} ·{" "}
         {trip.nights} diárias
       </p>
 
-      <div className="mt-8 space-y-3">
-        {trip.hotel.rooms.map((room) => {
-          const selected = selectedRoomId === room.id;
-          const fits = payingHeads <= room.capacity;
-          return (
-            <button
-              key={room.id}
-              type="button"
-              disabled={!fits}
-              onClick={() => setSelectedRoomId(room.id)}
-              className={
-                "flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition-all " +
-                (selected
-                  ? "border-accent bg-accent/5 ring-2 ring-accent/30"
-                  : "border-border bg-surface hover:border-border-strong") +
-                (!fits ? " cursor-not-allowed opacity-50" : "")
-              }
-            >
-              <div
-                className={
-                  "flex h-11 w-11 flex-none items-center justify-center rounded-xl " +
-                  (selected
-                    ? "bg-accent text-accent-foreground"
-                    : "bg-secondary text-foreground/60")
-                }
-              >
-                <BedDouble className="h-5 w-5" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-display text-base font-semibold">
-                    {room.name}
-                  </p>
-                  <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Até {room.capacity} pessoa{room.capacity > 1 ? "s" : ""}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {room.description}
-                </p>
-                {!fits && (
-                  <p className="mt-1 text-xs text-warning-foreground">
-                    Capacidade insuficiente para {payingHeads} pessoas.
-                  </p>
-                )}
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">por pessoa</p>
-                <p className="text-sm font-semibold">
-                  {room.pricePerPerson === 0
-                    ? "Padrão"
-                    : `${room.pricePerPerson > 0 ? "+" : "−"}${formatBRL(
-                        Math.abs(room.pricePerPerson),
-                      )}`}
-                </p>
-              </div>
-            </button>
-          );
-        })}
+      <div className="mt-8">
+        <RoomPicker
+          rooms={trip.hotel.rooms}
+          payingPassengers={payingPassengers}
+          selections={selections}
+          onChange={setSelections}
+        />
       </div>
 
       <div className="mt-6 rounded-2xl border border-border bg-secondary/40 p-4 text-sm text-muted-foreground">
         <HotelIcon className="mr-2 inline h-4 w-4" />
         {trip.hotel.meal} incluso · check-in em{" "}
-        {formatDate(trip.departureDate)}.
+        {formatDate(trip.departureDate)}. Cada quarto deve ser preenchido com a
+        capacidade total (single=1, duplo=2, triplo=3, quádruplo=4).
       </div>
     </div>
   );
