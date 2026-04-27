@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
 import { Sparkles } from "lucide-react";
+import type { ReactNode } from "react";
 
-/** Página placeholder reutilizável para módulos do dashboard ainda em construção. */
+/** Placeholder reutilizável para módulos do dashboard. */
 export function ModulePlaceholder({
   title,
   description,
@@ -12,7 +12,7 @@ export function ModulePlaceholder({
   title: string;
   description: string;
   icon?: LucideIcon;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }) {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
@@ -40,7 +40,3 @@ export function ModulePlaceholder({
     </div>
   );
 }
-
-export const Route = createFileRoute("/dashboard/_placeholder")({
-  component: () => null,
-});
