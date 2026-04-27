@@ -100,9 +100,7 @@ function CheckoutPage() {
   );
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
   const [passengers, setPassengers] = useState<Passenger[]>([]);
-  const [selectedRoomId, setSelectedRoomId] = useState<string>(
-    trip.hotel.rooms[0]?.id ?? "",
-  );
+  const [roomSelections, setRoomSelections] = useState<RoomSelection[]>([]);
 
   /* ---------- Categorias derivadas ---------- */
   const categories: PassengerCategory[] = useMemo(() => {
