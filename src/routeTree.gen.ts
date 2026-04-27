@@ -16,7 +16,17 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as ContaIndexRouteImport } from './routes/conta.index'
 import { Route as ViagemSlugRouteImport } from './routes/viagem.$slug'
 import { Route as ReservaConfirmadaSlugRouteImport } from './routes/reserva-confirmada.$slug'
+import { Route as DashboardUsuariosRouteImport } from './routes/dashboard.usuarios'
+import { Route as DashboardTransladosRouteImport } from './routes/dashboard.translados'
+import { Route as DashboardRifasRouteImport } from './routes/dashboard.rifas'
+import { Route as DashboardReservasRouteImport } from './routes/dashboard.reservas'
+import { Route as DashboardRelatoriosRouteImport } from './routes/dashboard.relatorios'
 import { Route as DashboardPassageirosRouteImport } from './routes/dashboard.passageiros'
+import { Route as DashboardLeadsRouteImport } from './routes/dashboard.leads'
+import { Route as DashboardLandingPageRouteImport } from './routes/dashboard.landing-page'
+import { Route as DashboardItinerariosRouteImport } from './routes/dashboard.itinerarios'
+import { Route as DashboardFinanceiroRouteImport } from './routes/dashboard.financeiro'
+import { Route as DashboardConfiguracoesRouteImport } from './routes/dashboard.configuracoes'
 import { Route as ContaVouchersRouteImport } from './routes/conta.vouchers'
 import { Route as ContaViagensRouteImport } from './routes/conta.viagens'
 import { Route as ContaRifasRouteImport } from './routes/conta.rifas'
@@ -62,9 +72,59 @@ const ReservaConfirmadaSlugRoute = ReservaConfirmadaSlugRouteImport.update({
   path: '/reserva-confirmada/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardUsuariosRoute = DashboardUsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardTransladosRoute = DashboardTransladosRouteImport.update({
+  id: '/translados',
+  path: '/translados',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardRifasRoute = DashboardRifasRouteImport.update({
+  id: '/rifas',
+  path: '/rifas',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardReservasRoute = DashboardReservasRouteImport.update({
+  id: '/reservas',
+  path: '/reservas',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardRelatoriosRoute = DashboardRelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardPassageirosRoute = DashboardPassageirosRouteImport.update({
   id: '/passageiros',
   path: '/passageiros',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardLeadsRoute = DashboardLeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardLandingPageRoute = DashboardLandingPageRouteImport.update({
+  id: '/landing-page',
+  path: '/landing-page',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardItinerariosRoute = DashboardItinerariosRouteImport.update({
+  id: '/itinerarios',
+  path: '/itinerarios',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardFinanceiroRoute = DashboardFinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardConfiguracoesRoute = DashboardConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
   getParentRoute: () => DashboardRoute,
 } as any)
 const ContaVouchersRoute = ContaVouchersRouteImport.update({
@@ -123,7 +183,17 @@ export interface FileRoutesByFullPath {
   '/conta/rifas': typeof ContaRifasRoute
   '/conta/viagens': typeof ContaViagensRoute
   '/conta/vouchers': typeof ContaVouchersRoute
+  '/dashboard/configuracoes': typeof DashboardConfiguracoesRoute
+  '/dashboard/financeiro': typeof DashboardFinanceiroRoute
+  '/dashboard/itinerarios': typeof DashboardItinerariosRoute
+  '/dashboard/landing-page': typeof DashboardLandingPageRoute
+  '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/passageiros': typeof DashboardPassageirosRoute
+  '/dashboard/relatorios': typeof DashboardRelatoriosRoute
+  '/dashboard/reservas': typeof DashboardReservasRoute
+  '/dashboard/rifas': typeof DashboardRifasRoute
+  '/dashboard/translados': typeof DashboardTransladosRoute
+  '/dashboard/usuarios': typeof DashboardUsuariosRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
   '/conta/': typeof ContaIndexRoute
@@ -140,7 +210,17 @@ export interface FileRoutesByTo {
   '/conta/rifas': typeof ContaRifasRoute
   '/conta/viagens': typeof ContaViagensRoute
   '/conta/vouchers': typeof ContaVouchersRoute
+  '/dashboard/configuracoes': typeof DashboardConfiguracoesRoute
+  '/dashboard/financeiro': typeof DashboardFinanceiroRoute
+  '/dashboard/itinerarios': typeof DashboardItinerariosRoute
+  '/dashboard/landing-page': typeof DashboardLandingPageRoute
+  '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/passageiros': typeof DashboardPassageirosRoute
+  '/dashboard/relatorios': typeof DashboardRelatoriosRoute
+  '/dashboard/reservas': typeof DashboardReservasRoute
+  '/dashboard/rifas': typeof DashboardRifasRoute
+  '/dashboard/translados': typeof DashboardTransladosRoute
+  '/dashboard/usuarios': typeof DashboardUsuariosRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
   '/conta': typeof ContaIndexRoute
@@ -160,7 +240,17 @@ export interface FileRoutesById {
   '/conta/rifas': typeof ContaRifasRoute
   '/conta/viagens': typeof ContaViagensRoute
   '/conta/vouchers': typeof ContaVouchersRoute
+  '/dashboard/configuracoes': typeof DashboardConfiguracoesRoute
+  '/dashboard/financeiro': typeof DashboardFinanceiroRoute
+  '/dashboard/itinerarios': typeof DashboardItinerariosRoute
+  '/dashboard/landing-page': typeof DashboardLandingPageRoute
+  '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/passageiros': typeof DashboardPassageirosRoute
+  '/dashboard/relatorios': typeof DashboardRelatoriosRoute
+  '/dashboard/reservas': typeof DashboardReservasRoute
+  '/dashboard/rifas': typeof DashboardRifasRoute
+  '/dashboard/translados': typeof DashboardTransladosRoute
+  '/dashboard/usuarios': typeof DashboardUsuariosRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
   '/conta/': typeof ContaIndexRoute
@@ -181,7 +271,17 @@ export interface FileRouteTypes {
     | '/conta/rifas'
     | '/conta/viagens'
     | '/conta/vouchers'
+    | '/dashboard/configuracoes'
+    | '/dashboard/financeiro'
+    | '/dashboard/itinerarios'
+    | '/dashboard/landing-page'
+    | '/dashboard/leads'
     | '/dashboard/passageiros'
+    | '/dashboard/relatorios'
+    | '/dashboard/reservas'
+    | '/dashboard/rifas'
+    | '/dashboard/translados'
+    | '/dashboard/usuarios'
     | '/reserva-confirmada/$slug'
     | '/viagem/$slug'
     | '/conta/'
@@ -198,7 +298,17 @@ export interface FileRouteTypes {
     | '/conta/rifas'
     | '/conta/viagens'
     | '/conta/vouchers'
+    | '/dashboard/configuracoes'
+    | '/dashboard/financeiro'
+    | '/dashboard/itinerarios'
+    | '/dashboard/landing-page'
+    | '/dashboard/leads'
     | '/dashboard/passageiros'
+    | '/dashboard/relatorios'
+    | '/dashboard/reservas'
+    | '/dashboard/rifas'
+    | '/dashboard/translados'
+    | '/dashboard/usuarios'
     | '/reserva-confirmada/$slug'
     | '/viagem/$slug'
     | '/conta'
@@ -217,7 +327,17 @@ export interface FileRouteTypes {
     | '/conta/rifas'
     | '/conta/viagens'
     | '/conta/vouchers'
+    | '/dashboard/configuracoes'
+    | '/dashboard/financeiro'
+    | '/dashboard/itinerarios'
+    | '/dashboard/landing-page'
+    | '/dashboard/leads'
     | '/dashboard/passageiros'
+    | '/dashboard/relatorios'
+    | '/dashboard/reservas'
+    | '/dashboard/rifas'
+    | '/dashboard/translados'
+    | '/dashboard/usuarios'
     | '/reserva-confirmada/$slug'
     | '/viagem/$slug'
     | '/conta/'
@@ -288,11 +408,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReservaConfirmadaSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/usuarios': {
+      id: '/dashboard/usuarios'
+      path: '/usuarios'
+      fullPath: '/dashboard/usuarios'
+      preLoaderRoute: typeof DashboardUsuariosRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/translados': {
+      id: '/dashboard/translados'
+      path: '/translados'
+      fullPath: '/dashboard/translados'
+      preLoaderRoute: typeof DashboardTransladosRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/rifas': {
+      id: '/dashboard/rifas'
+      path: '/rifas'
+      fullPath: '/dashboard/rifas'
+      preLoaderRoute: typeof DashboardRifasRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/reservas': {
+      id: '/dashboard/reservas'
+      path: '/reservas'
+      fullPath: '/dashboard/reservas'
+      preLoaderRoute: typeof DashboardReservasRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/relatorios': {
+      id: '/dashboard/relatorios'
+      path: '/relatorios'
+      fullPath: '/dashboard/relatorios'
+      preLoaderRoute: typeof DashboardRelatoriosRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/passageiros': {
       id: '/dashboard/passageiros'
       path: '/passageiros'
       fullPath: '/dashboard/passageiros'
       preLoaderRoute: typeof DashboardPassageirosRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/leads': {
+      id: '/dashboard/leads'
+      path: '/leads'
+      fullPath: '/dashboard/leads'
+      preLoaderRoute: typeof DashboardLeadsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/landing-page': {
+      id: '/dashboard/landing-page'
+      path: '/landing-page'
+      fullPath: '/dashboard/landing-page'
+      preLoaderRoute: typeof DashboardLandingPageRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/itinerarios': {
+      id: '/dashboard/itinerarios'
+      path: '/itinerarios'
+      fullPath: '/dashboard/itinerarios'
+      preLoaderRoute: typeof DashboardItinerariosRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/financeiro': {
+      id: '/dashboard/financeiro'
+      path: '/financeiro'
+      fullPath: '/dashboard/financeiro'
+      preLoaderRoute: typeof DashboardFinanceiroRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/configuracoes': {
+      id: '/dashboard/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/dashboard/configuracoes'
+      preLoaderRoute: typeof DashboardConfiguracoesRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/conta/vouchers': {
@@ -380,7 +570,17 @@ const ContaRouteChildren: ContaRouteChildren = {
 const ContaRouteWithChildren = ContaRoute._addFileChildren(ContaRouteChildren)
 
 interface DashboardRouteChildren {
+  DashboardConfiguracoesRoute: typeof DashboardConfiguracoesRoute
+  DashboardFinanceiroRoute: typeof DashboardFinanceiroRoute
+  DashboardItinerariosRoute: typeof DashboardItinerariosRoute
+  DashboardLandingPageRoute: typeof DashboardLandingPageRoute
+  DashboardLeadsRoute: typeof DashboardLeadsRoute
   DashboardPassageirosRoute: typeof DashboardPassageirosRoute
+  DashboardRelatoriosRoute: typeof DashboardRelatoriosRoute
+  DashboardReservasRoute: typeof DashboardReservasRoute
+  DashboardRifasRoute: typeof DashboardRifasRoute
+  DashboardTransladosRoute: typeof DashboardTransladosRoute
+  DashboardUsuariosRoute: typeof DashboardUsuariosRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardViagensTripIdRoute: typeof DashboardViagensTripIdRoute
   DashboardViagensNovaRoute: typeof DashboardViagensNovaRoute
@@ -388,7 +588,17 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardConfiguracoesRoute: DashboardConfiguracoesRoute,
+  DashboardFinanceiroRoute: DashboardFinanceiroRoute,
+  DashboardItinerariosRoute: DashboardItinerariosRoute,
+  DashboardLandingPageRoute: DashboardLandingPageRoute,
+  DashboardLeadsRoute: DashboardLeadsRoute,
   DashboardPassageirosRoute: DashboardPassageirosRoute,
+  DashboardRelatoriosRoute: DashboardRelatoriosRoute,
+  DashboardReservasRoute: DashboardReservasRoute,
+  DashboardRifasRoute: DashboardRifasRoute,
+  DashboardTransladosRoute: DashboardTransladosRoute,
+  DashboardUsuariosRoute: DashboardUsuariosRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardViagensTripIdRoute: DashboardViagensTripIdRoute,
   DashboardViagensNovaRoute: DashboardViagensNovaRoute,
