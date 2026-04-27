@@ -38,6 +38,13 @@ export const Route = createRootRoute({
       { name: "author", content: "TapTur" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "TapTur — Viagens e excursões com as melhores agências" },
+      { name: "twitter:title", content: "TapTur — Viagens e excursões com as melhores agências" },
+      { name: "description", content: "SaaS multi-tenant for travel agencies to centralize operations, sell online, and manage finances." },
+      { property: "og:description", content: "SaaS multi-tenant for travel agencies to centralize operations, sell online, and manage finances." },
+      { name: "twitter:description", content: "SaaS multi-tenant for travel agencies to centralize operations, sell online, and manage finances." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/rU7CrAnSZlRCaEyQhUV0jwsX16v2/social-images/social-1777304922804-ChatGPT_Image_20_de_abr._de_2026,_22_30_02.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/rU7CrAnSZlRCaEyQhUV0jwsX16v2/social-images/social-1777304922804-ChatGPT_Image_20_de_abr._de_2026,_22_30_02.webp" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
