@@ -16,9 +16,9 @@ import {
   formatBRL,
   formatDate,
   type Trip,
-  type Room,
 } from "@/data/trips";
 import { SeatPicker } from "@/components/checkout/SeatPicker";
+import { RoomPicker, type RoomSelection } from "@/components/checkout/RoomPicker";
 
 export const Route = createFileRoute("/checkout/$slug")({
   component: CheckoutPage,
