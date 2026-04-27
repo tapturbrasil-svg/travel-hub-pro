@@ -46,34 +46,19 @@ export function DashboardShell() {
   return (
     <div className="flex min-h-screen bg-surface-elevated">
       {/* Sidebar */}
-      <aside className="hidden w-64 flex-none border-r border-border bg-background lg:flex lg:flex-col">
-        <div className="flex h-16 items-center gap-2 border-b border-border px-6">
+      <aside className="hidden w-60 flex-none flex-col border-r border-border bg-background lg:flex">
+        <div className="flex h-16 items-center gap-2 border-b border-border px-5">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <span className="font-display text-sm font-bold">T</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft">
+              <span className="font-display text-base font-bold">T</span>
             </div>
-            <span className="font-display text-base font-semibold tracking-tight">
+            <span className="font-display text-lg font-semibold tracking-tight">
               TapTur
             </span>
           </Link>
         </div>
 
-        <div className="border-b border-border px-4 py-5">
-          <div className="flex items-center gap-3 rounded-2xl bg-surface-elevated p-3">
-            <div
-              className="flex h-10 w-10 flex-none items-center justify-center rounded-xl text-sm font-bold text-white"
-              style={{ background: agency.brandColor }}
-            >
-              {agency.initials}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold">{agency.name}</p>
-              <p className="text-xs text-muted-foreground">Plano Pro</p>
-            </div>
-          </div>
-        </div>
-
-        <nav className="flex-1 px-3 py-4">
+        <nav className="flex-1 overflow-y-auto px-3 py-3">
           {NAV.map(({ to, label, icon: Icon, exact }) => {
             const active = exact ? pathname === to : pathname.startsWith(to);
             return (
@@ -81,26 +66,38 @@ export function DashboardShell() {
                 key={to}
                 to={to}
                 className={
-                  "mt-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors " +
+                  "mt-0.5 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors " +
                   (active
-                    ? "bg-foreground text-background"
+                    ? "bg-accent/10 text-accent"
                     : "text-foreground/70 hover:bg-surface-elevated hover:text-foreground")
                 }
               >
-                <Icon className="h-4 w-4" />
-                {label}
+                <Icon className="h-4 w-4 flex-none" />
+                <span className="truncate">{label}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="border-t border-border p-4">
+        <div className="border-t border-border p-3">
+          <div className="mb-3 flex items-center gap-3 rounded-xl bg-surface-elevated p-3">
+            <div
+              className="flex h-9 w-9 flex-none items-center justify-center rounded-lg text-xs font-bold text-white"
+              style={{ background: agency.brandColor }}
+            >
+              {agency.initials}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-xs font-semibold">{agency.name}</p>
+              <p className="text-[11px] text-muted-foreground">Plano Pro</p>
+            </div>
+          </div>
           <Link
-            to="/dashboard/viagens/nova"
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-95"
+            to="/"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-foreground/70 transition-colors hover:bg-surface-elevated hover:text-foreground"
           >
-            <Plus className="h-4 w-4" />
-            Nova viagem
+            <LogOut className="h-4 w-4" />
+            Sair
           </Link>
         </div>
       </aside>
@@ -115,6 +112,12 @@ export function DashboardShell() {
             <ChevronLeft className="h-4 w-4" /> Voltar para o site
           </Link>
           <div className="flex items-center gap-2">
+            <Link
+              to="/dashboard/viagens/nova"
+              className="hidden items-center gap-2 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground transition-opacity hover:opacity-95 sm:inline-flex"
+            >
+              <Plus className="h-3.5 w-3.5" /> Nova viagem
+            </Link>
             <button
               type="button"
               className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/70 hover:bg-surface-elevated"
