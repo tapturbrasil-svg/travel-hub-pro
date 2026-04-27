@@ -16,9 +16,9 @@ import {
   formatBRL,
   formatDate,
   type Trip,
-  type Room,
 } from "@/data/trips";
 import { SeatPicker } from "@/components/checkout/SeatPicker";
+import { RoomPicker, type RoomSelection } from "@/components/checkout/RoomPicker";
 
 export const Route = createFileRoute("/checkout/$slug")({
   component: CheckoutPage,
@@ -100,9 +100,7 @@ function CheckoutPage() {
   );
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
   const [passengers, setPassengers] = useState<Passenger[]>([]);
-  const [selectedRoomId, setSelectedRoomId] = useState<string>(
-    trip.hotel.rooms[0]?.id ?? "",
-  );
+  const [roomSelections, setRoomSelections] = useState<RoomSelection[]>([]);
 
   /* ---------- Categorias derivadas ---------- */
   const categories: PassengerCategory[] = useMemo(() => {
@@ -151,9 +149,9 @@ function CheckoutPage() {
   }, [categories, selectedSeats, includesTransport]);
 
   /* ---------- Cálculo do total ---------- */
-  const selectedRoom: Room | undefined = useMemo(
-    () => trip.hotel.rooms.find((r) => r.id === selectedRoomId),
-    [selectedRoomId, trip.hotel.rooms],
+  const payingHeads = useMemo(
+    () => categories.filter((c) => c !== "child_lap").length,
+    [categories],
   );
 
   const subtotal = useMemo(() => {
@@ -162,13 +160,27 @@ function CheckoutPage() {
 
   const lodgingAdjust = useMemo(() => {
     if (!includesLodging) return -(trip.hotelDiscount ?? 0) * adults;
-    if (!selectedRoom) return 0;
-    // pricePerPerson aplicada apenas a quem ocupa assento (cama)
-    const payingHeads = categories.filter((c) => c !== "child_lap").length;
-    return selectedRoom.pricePerPerson * payingHeads;
-  }, [includesLodging, trip.hotelDiscount, selectedRoom, categories, adults]);
+    // soma o ajuste de cada quarto selecionado, multiplicado pelos hóspedes alocados nele
+    return roomSelections.reduce((sum, sel) => {
+      const room = trip.hotel.rooms.find((r) => r.id === sel.roomId);
+      if (!room) return sum;
+      return sum + room.pricePerPerson * sel.occupants.length;
+    }, 0);
+  }, [includesLodging, trip.hotelDiscount, trip.hotel.rooms, roomSelections, adults]);
 
   const total = Math.max(0, subtotal + lodgingAdjust);
+
+  /** Validação do step de hotel: todos alocados E cada quarto cheio */
+  const hotelValid = useMemo(() => {
+    if (!includesLodging) return true;
+    if (roomSelections.length === 0) return false;
+    const allocated = roomSelections.reduce((s, r) => s + r.occupants.length, 0);
+    if (allocated !== payingHeads) return false;
+    return roomSelections.every((sel) => {
+      const room = trip.hotel.rooms.find((r) => r.id === sel.roomId);
+      return room && sel.occupants.length === room.capacity;
+    });
+  }, [includesLodging, roomSelections, payingHeads, trip.hotel.rooms]);
 
   /* ---------- Navegação dos passos ---------- */
   // Steps dinâmicos: 1 People, 2 Seats (se transporte), 3 Hotel (se lodging com escolha de quarto), 4 Passenger Data, 5 Pagamento
@@ -197,7 +209,7 @@ function CheckoutPage() {
   const canProceed = (() => {
     if (step === 1) return adults + children.length > 0;
     if (step === 2) return selectedSeats.length === seatsNeeded;
-    if (step === 3) return !includesLodging || !!selectedRoomId;
+    if (step === 3) return hotelValid;
     if (step === 4)
       return passengers.every(
         (p) => (p?.name ?? "").trim().length > 1 && (p?.document ?? "").trim().length > 3,
@@ -262,9 +274,9 @@ function CheckoutPage() {
             {step === 3 && includesLodging && (
               <StepHotel
                 trip={trip}
-                selectedRoomId={selectedRoomId}
-                setSelectedRoomId={setSelectedRoomId}
-                payingHeads={categories.filter((c) => c !== "child_lap").length}
+                selections={roomSelections}
+                setSelections={setRoomSelections}
+                passengers={passengers}
               />
             )}
 
@@ -331,17 +343,23 @@ function CheckoutPage() {
                     success
                   />
                 )}
-                {includesLodging && selectedRoom && selectedRoom.pricePerPerson !== 0 && (
-                  <SummaryRow
-                    label={selectedRoom.name}
-                    value={`${selectedRoom.pricePerPerson > 0 ? "+" : "−"}${formatBRL(
-                      Math.abs(
-                        selectedRoom.pricePerPerson *
-                          categories.filter((c) => c !== "child_lap").length,
-                      ),
-                    )}`}
-                  />
-                )}
+                {includesLodging &&
+                  roomSelections.map((sel, i) => {
+                    const room = trip.hotel.rooms.find((r) => r.id === sel.roomId);
+                    if (!room || sel.occupants.length === 0) return null;
+                    const adj = room.pricePerPerson * sel.occupants.length;
+                    return (
+                      <SummaryRow
+                        key={i}
+                        label={`${room.name} (${sel.occupants.length}p)`}
+                        value={
+                          adj === 0
+                            ? "Padrão"
+                            : `${adj > 0 ? "+" : "−"}${formatBRL(Math.abs(adj))}`
+                        }
+                      />
+                    );
+                  })}
 
                 <div className="flex justify-between border-t border-border pt-3 text-base font-semibold">
                   <span>Total</span>
@@ -777,90 +795,54 @@ function StepSeats({
 
 function StepHotel({
   trip,
-  selectedRoomId,
-  setSelectedRoomId,
-  payingHeads,
+  selections,
+  setSelections,
+  passengers,
 }: {
   trip: Trip;
-  selectedRoomId: string;
-  setSelectedRoomId: (id: string) => void;
-  payingHeads: number;
+  selections: RoomSelection[];
+  setSelections: (s: RoomSelection[]) => void;
+  passengers: Passenger[];
 }) {
+  // Apenas passageiros que precisam de cama (não colo)
+  const payingPassengers = passengers
+    .map((p, idx) => ({ p, idx }))
+    .filter(({ p }) => p.category !== "child_lap")
+    .map(({ p, idx }, i) => ({
+      label: p.name?.trim() || `Hóspede ${i + 1}`,
+      sub:
+        p.category === "adult"
+          ? "Adulto"
+          : p.category === "child_half"
+            ? "Criança · meia"
+            : "Criança",
+      _origIdx: idx,
+    }));
+
   return (
     <div>
       <h2 className="font-display text-2xl font-semibold tracking-tight">
-        Escolha seu quarto
+        Escolha seus quartos
       </h2>
       <p className="mt-2 text-muted-foreground">
         {trip.hotel.name} · {trip.hotel.stars}★ · {trip.hotel.meal} ·{" "}
         {trip.nights} diárias
       </p>
 
-      <div className="mt-8 space-y-3">
-        {trip.hotel.rooms.map((room) => {
-          const selected = selectedRoomId === room.id;
-          const fits = payingHeads <= room.capacity;
-          return (
-            <button
-              key={room.id}
-              type="button"
-              disabled={!fits}
-              onClick={() => setSelectedRoomId(room.id)}
-              className={
-                "flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition-all " +
-                (selected
-                  ? "border-accent bg-accent/5 ring-2 ring-accent/30"
-                  : "border-border bg-surface hover:border-border-strong") +
-                (!fits ? " cursor-not-allowed opacity-50" : "")
-              }
-            >
-              <div
-                className={
-                  "flex h-11 w-11 flex-none items-center justify-center rounded-xl " +
-                  (selected
-                    ? "bg-accent text-accent-foreground"
-                    : "bg-secondary text-foreground/60")
-                }
-              >
-                <BedDouble className="h-5 w-5" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-display text-base font-semibold">
-                    {room.name}
-                  </p>
-                  <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Até {room.capacity} pessoa{room.capacity > 1 ? "s" : ""}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {room.description}
-                </p>
-                {!fits && (
-                  <p className="mt-1 text-xs text-warning-foreground">
-                    Capacidade insuficiente para {payingHeads} pessoas.
-                  </p>
-                )}
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">por pessoa</p>
-                <p className="text-sm font-semibold">
-                  {room.pricePerPerson === 0
-                    ? "Padrão"
-                    : `${room.pricePerPerson > 0 ? "+" : "−"}${formatBRL(
-                        Math.abs(room.pricePerPerson),
-                      )}`}
-                </p>
-              </div>
-            </button>
-          );
-        })}
+      <div className="mt-8">
+        <RoomPicker
+          rooms={trip.hotel.rooms}
+          payingPassengers={payingPassengers}
+          selections={selections}
+          onChange={setSelections}
+        />
       </div>
 
       <div className="mt-6 rounded-2xl border border-border bg-secondary/40 p-4 text-sm text-muted-foreground">
         <HotelIcon className="mr-2 inline h-4 w-4" />
         {trip.hotel.meal} incluso · check-in em{" "}
-        {formatDate(trip.departureDate)}.
+        {formatDate(trip.departureDate)}. Cada quarto deve ser preenchido com a
+        capacidade total (single=1, duplo=2, triplo=3, quádruplo=4).
       </div>
     </div>
   );
