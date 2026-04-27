@@ -5,6 +5,23 @@ import gramado from "@/assets/trip-gramado.jpg";
 import maceio from "@/assets/trip-maceio.jpg";
 import jeri from "@/assets/trip-jeri.jpg";
 
+/**
+ * packageType controls what the customer can buy:
+ *  - "full"      → pacote completo, transporte + hospedagem juntos (não vendidos separados)
+ *  - "transport" → só transporte (sem hospedagem)
+ *  - "lodging"   → só hospedagem (sem transporte)
+ *  - "flexible"  → cliente escolhe: com ou sem hospedagem
+ */
+export type PackageType = "full" | "transport" | "lodging" | "flexible";
+
+export type Room = {
+  id: string;
+  name: string;        // ex: "Quarto Duplo Vista Mar"
+  capacity: number;    // pessoas por quarto
+  pricePerPerson: number;
+  description: string;
+};
+
 export type Trip = {
   id: string;
   slug: string;
@@ -21,14 +38,17 @@ export type Trip = {
   vehicle: "Ônibus Leito" | "Ônibus Executivo" | "Van Premium";
   capacity: number;
   priceAdult: number;
-  priceChild: number;
+  priceChild: number; // meia (5–12 anos)
   installments: number;
   rating: number;
   reviews: number;
   highlights: string[];
   description: string;
   includes: string[];
-  hotel: { name: string; stars: number; meal: string };
+  packageType: PackageType;
+  /** desconto aplicado quando o cliente opta por NÃO levar hospedagem (somente "flexible") */
+  hotelDiscount?: number;
+  hotel: { name: string; stars: number; meal: string; rooms: Room[] };
 };
 
 export const TRIPS: Trip[] = [
