@@ -1,27 +1,23 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Star, MapPin, ArrowLeft, ShieldCheck, Calendar } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { TripCard } from "@/components/site/TripCard";
-import { getAgencyBySlug, getTripsByAgency, type Agency } from "@/data/agencies";
+import { supabase } from "@/lib/supabase";
 import { type Trip } from "@/data/trips";
 
 export const Route = createFileRoute("/agencia/$slug")({
   component: AgencyPage,
-  loader: ({ params }): { agency: Agency; trips: Trip[] } => {
-    const agency = getAgencyBySlug(params.slug);
-    if (!agency) throw notFound();
-    return { agency, trips: getTripsByAgency(params.slug) };
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData) return {};
+  head: ({ loaderData }: any) => {
+    if (!loaderData?.agency) return {};
     const { agency } = loaderData;
     return {
       meta: [
         { title: `${agency.name} — viagens e excursões | TapTur` },
-        { name: "description", content: agency.description.slice(0, 155) },
+        { name: "description", content: (agency.description || "").slice(0, 155) },
         { property: "og:title", content: `${agency.name} no TapTur` },
-        { property: "og:description", content: agency.tagline },
+        { property: "og:description", content: agency.tagline || "" },
       ],
     };
   },
@@ -38,10 +34,67 @@ export const Route = createFileRoute("/agencia/$slug")({
 });
 
 function AgencyPage() {
-  const { agency, trips } = Route.useLoaderData() as {
-    agency: Agency;
-    trips: Trip[];
-  };
+  const [agency, setAgency] = useState<any>(null);
+  const [trips, setTrips] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      const slug = window.location.pathname.split("/").pop() || "";
+      
+      const { data: agencyData } = await supabase
+        .from("agencies")
+        .select("*")
+        .eq("slug", slug)
+        .single();
+
+      if (agencyData) {
+        setAgency(agencyData);
+        
+        const { data: tripsData } = await supabase
+          .from("trips")
+          .select("*")
+          .eq("agency_id", agencyData.id)
+          .eq("status", "active");
+        
+        setTrips(tripsData || []);
+      }
+      setLoading(false);
+    }
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <p>Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!agency) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex min-h-screen items-center justify-center p-6">
+          <div className="text-center">
+            <h1 className="font-display text-3xl font-semibold">Agência não encontrada</h1>
+            <Link to="/" className="mt-4 inline-block text-accent hover:underline">
+              Voltar para a home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const rating = agency.rating || 5.0;
+  const reviews = agency.reviews || 0;
+  const initials = agency.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "XX";
+  const brandColor = agency.brand_color || "#0EA5E9";
 
   return (
     <div className="min-h-screen bg-background">
@@ -61,7 +114,7 @@ function AgencyPage() {
         <div
           className="relative overflow-hidden rounded-3xl px-8 py-16 md:px-14 md:py-20"
           style={{
-            background: `linear-gradient(135deg, ${agency.brandColor}, oklch(0.22 0.02 250))`,
+            background: `linear-gradient(135deg, ${brandColor}, oklch(0.22 0.02 250))`,
           }}
         >
           <div className="relative z-10 flex flex-col items-start gap-8 md:flex-row md:items-center md:gap-10">
@@ -69,7 +122,7 @@ function AgencyPage() {
               className="flex h-24 w-24 flex-none items-center justify-center rounded-3xl bg-surface font-display text-3xl font-bold text-foreground shadow-card"
               aria-hidden
             >
-              {agency.initials}
+              {initials}
             </div>
             <div className="flex-1 text-primary-foreground">
               <div className="flex flex-wrap items-center gap-3 text-xs">
@@ -78,18 +131,14 @@ function AgencyPage() {
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 backdrop-blur">
                   <Star className="h-3 w-3 fill-current" />
-                  {agency.rating.toFixed(1)} · {agency.reviews} avaliações
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 backdrop-blur">
-                  <MapPin className="h-3 w-3" />
-                  {agency.city}, {agency.state}
+                  {rating.toFixed(1)} · {reviews} avaliações
                 </span>
               </div>
               <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight md:text-5xl">
                 {agency.name}
               </h1>
               <p className="mt-2 text-lg text-primary-foreground/80">
-                {agency.tagline}
+                {agency.tagline || "Viagens e excursões"}
               </p>
             </div>
           </div>
@@ -106,13 +155,13 @@ function AgencyPage() {
           Sobre a agência
         </h2>
         <p className="mt-4 text-pretty leading-relaxed text-foreground/80">
-          {agency.description}
+          {agency.description || "Agência de turismo com as melhores viagens e excursões."}
         </p>
 
         <div className="mt-8 grid grid-cols-3 gap-4">
-          <Stat label="Anos de mercado" value={`${agency.yearsActive}+`} />
-          <Stat label="Avaliação média" value={agency.rating.toFixed(1)} />
-          <Stat label="Avaliações" value={agency.reviews.toLocaleString("pt-BR")} />
+          <Stat label="Anos de mercado" value="2+" />
+          <Stat label="Avaliação média" value={rating.toFixed(1)} />
+          <Stat label="Avaliações" value={reviews.toLocaleString("pt-BR")} />
         </div>
       </section>
 
@@ -128,18 +177,34 @@ function AgencyPage() {
           </p>
         </div>
 
-        {trips.length === 0 ? (
-          <div className="mt-12 rounded-3xl border border-border bg-surface p-16 text-center">
-            <Calendar className="mx-auto h-8 w-8 text-muted-foreground" />
-            <p className="mt-4 text-muted-foreground">
-              Nenhuma viagem publicada no momento.
-            </p>
+        {trips.length > 0 ? (
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {trips.map((trip: any) => (
+              <TripCard
+                key={trip.id}
+                trip={{
+                  ...trip,
+                  slug: trip.slug,
+                  destination: trip.destination,
+                  state: trip.state || "",
+                  agency: agency.name,
+                  agencySlug: agency.slug,
+                  image: trip.image_url || "",
+                  departureDate: trip.departure_date,
+                  returnDate: trip.return_date,
+                  priceAdult: trip.price_adult,
+                  priceChild: trip.price_child,
+                  nights: 0,
+                  rating: 5.0,
+                }}
+              />
+            ))}
           </div>
         ) : (
-          <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {trips.map((t) => (
-              <TripCard key={t.id} trip={t} />
-            ))}
+          <div className="mt-12 rounded-2xl border border-dashed border-border p-12 text-center">
+            <p className="text-muted-foreground">
+              Nenhuma viagem disponível no momento.
+            </p>
           </div>
         )}
       </section>
@@ -151,11 +216,9 @@ function AgencyPage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5">
-      <p className="font-display text-2xl font-semibold tracking-tight">{value}</p>
-      <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
-        {label}
-      </p>
+    <div className="rounded-xl bg-surface p-4 text-center">
+      <p className="text-2xl font-bold">{value}</p>
+      <p className="text-sm text-muted-foreground">{label}</p>
     </div>
   );
 }

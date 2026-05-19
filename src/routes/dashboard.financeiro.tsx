@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { Wallet, TrendingUp, ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { formatBRL } from "@/data/trips";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/dashboard/financeiro")({
   component: FinanceiroPage,
@@ -8,12 +10,71 @@ export const Route = createFileRoute("/dashboard/financeiro")({
 });
 
 function FinanceiroPage() {
+  const [loading, setLoading] = useState(true);
+  const [receitaMes, setReceitaMes] = useState(0);
+  const [aReceber, setAReceber] = useState(0);
+  const [aPagar, setAPagar] = useState(0);
+  const [saldoCaixa, setSaldoCaixa] = useState(0);
+  const [reservasPendentes, setReservasPendentes] = useState(0);
+
+  useEffect(() => {
+    async function loadDadosFinanceiros() {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
+
+      const [{ data: reservasConfirmadas }, { data: reservasPendentesData }] = await Promise.all([
+        supabase
+          .from("reservations")
+          .select("total_value, created_at")
+          .eq("status", "confirmed")
+          .gte("created_at", startOfMonth)
+          .lte("created_at", endOfMonth),
+        supabase
+          .from("reservations")
+          .select("id, total_value")
+          .eq("status", "pending")
+          .or("payment_status.eq.partial,payment_status.is.null"),
+      ]);
+
+      const receita = reservasConfirmadas?.reduce((acc, r) => acc + (r.total_value || 0), 0) || 0;
+      const receber = reservasPendentesData?.reduce((acc, r) => acc + (r.total_value || 0), 0) || 0;
+      const reservaCount = reservasPendentesData?.length || 0;
+
+      const { data: aPagarData } = await supabase
+        .from("accounts_payable")
+        .select("value")
+        .eq("status", "pending")
+        .lte("due_date", endOfMonth);
+
+      const pagar = aPagarData?.reduce((acc, p) => acc + (p.value || 0), 0) || 0;
+      const saldo = receita - pagar;
+
+      setReceitaMes(receita);
+      setAReceber(receber);
+      setAPagar(pagar);
+      setSaldoCaixa(saldo);
+      setReservasPendentes(reservaCount);
+      setLoading(false);
+    }
+
+    loadDadosFinanceiros();
+  }, []);
+
   const cards = [
-    { label: "Receita do mês", value: 184560, icon: TrendingUp, trend: "+12%" },
-    { label: "A receber", value: 96200, icon: ArrowDownRight, trend: "32 reservas" },
-    { label: "A pagar", value: 41800, icon: ArrowUpRight, trend: "18 lançamentos" },
-    { label: "Saldo em caixa", value: 142760, icon: Wallet, trend: "atualizado agora" },
+    { label: "Receita do mês", value: receitaMes, icon: TrendingUp, trend: "+12%" },
+    { label: "A receber", value: aReceber, icon: ArrowDownRight, trend: `${reservasPendentes} reservas` },
+    { label: "A pagar", value: aPagar, icon: ArrowUpRight, trend: "lançamentos pendentes" },
+    { label: "Saldo em caixa", value: saldoCaixa, icon: Wallet, trend: "atualizado agora" },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-10">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">

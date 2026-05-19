@@ -3,6 +3,8 @@ import { Star } from "lucide-react";
 import { formatBRL, formatDateShort, type Trip } from "@/data/trips";
 
 export function TripCard({ trip }: { trip: Trip }) {
+  const rating = trip.rating ?? 5.0;
+  
   return (
     <Link
       to="/viagem/$slug"
@@ -20,7 +22,7 @@ export function TripCard({ trip }: { trip: Trip }) {
         />
         <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-surface/95 px-2.5 py-1 text-xs font-semibold text-foreground shadow-soft backdrop-blur">
           <Star className="h-3 w-3 fill-foreground" />
-          {trip.rating.toFixed(1)}
+          {rating.toFixed(1)}
         </div>
       </div>
       <div className="mt-4 space-y-1">

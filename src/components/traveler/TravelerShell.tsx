@@ -1,4 +1,5 @@
-import { Link, Outlet, useLocation } from "@tanstack/react-router";
+import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   User as UserIcon,
   Ticket,
@@ -6,10 +7,11 @@ import {
   Sparkles,
   Plane,
   LogOut,
+  Loader2,
 } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { TRAVELER } from "@/data/traveler";
+import { supabase } from "@/lib/supabase";
 import type { ReactNode } from "react";
 
 const NAV: { to: string; label: string; icon: ReactNode }[] = [
@@ -22,6 +24,46 @@ const NAV: { to: string; label: string; icon: ReactNode }[] = [
 
 export function TravelerShell({ children }: { children?: ReactNode }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        navigate("/sign-in", { replace: true });
+        return;
+      }
+      
+      setUser(session.user);
+      setLoading(false);
+    }
+    checkAuth();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/", { replace: true });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  const userName = user.user_metadata?.name || user.email?.split("@")[0] || "Usuário";
+  const userEmail = user.email || "";
+  const avatarInitials = userName.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -32,14 +74,14 @@ export function TravelerShell({ children }: { children?: ReactNode }) {
             <div className="rounded-3xl border border-border bg-surface p-6 shadow-soft">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-base font-semibold text-accent-foreground">
-                  {TRAVELER.avatarInitials}
+                  {avatarInitials}
                 </div>
                 <div className="min-w-0">
                   <p className="truncate font-display text-base font-semibold">
-                    {TRAVELER.name}
+                    {userName}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {TRAVELER.email}
+                    {userEmail}
                   </p>
                 </div>
               </div>
@@ -49,7 +91,7 @@ export function TravelerShell({ children }: { children?: ReactNode }) {
                   Pontos TapTur
                 </p>
                 <p className="mt-1 font-display text-2xl font-semibold">
-                  {TRAVELER.loyaltyPoints.toLocaleString("pt-BR")}
+                  0
                 </p>
               </div>
 
@@ -79,6 +121,7 @@ export function TravelerShell({ children }: { children?: ReactNode }) {
               <div className="mt-6 border-t border-border pt-4">
                 <button
                   type="button"
+                  onClick={handleLogout}
                   className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                 >
                   <LogOut className="h-4 w-4" />

@@ -1,27 +1,23 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Star, MapPin, Calendar, Bus, Hotel, Check, ArrowLeft } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { getTripBySlug, formatBRL, formatDate, type Trip } from "@/data/trips";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/viagem/$slug")({
   component: TripPage,
-  loader: ({ params }): { trip: Trip } => {
-    const trip = getTripBySlug(params.slug);
-    if (!trip) throw notFound();
-    return { trip };
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData) return {};
+  head: ({ loaderData }: any) => {
+    if (!loaderData?.trip) return {};
     const { trip } = loaderData;
     return {
       meta: [
-        { title: `${trip.destination}, ${trip.state} — ${trip.nights} noites | TapTur` },
-        { name: "description", content: trip.description.slice(0, 155) },
+        { title: `${trip.destination} — ${trip.nights || 0} noites | TapTur` },
+        { name: "description", content: trip.description?.slice(0, 155) || "" },
         { property: "og:title", content: `${trip.destination} com TapTur` },
-        { property: "og:description", content: trip.description.slice(0, 155) },
-        { property: "og:image", content: trip.image },
-        { name: "twitter:image", content: trip.image },
+        { property: "og:description", content: trip.description?.slice(0, 155) || "" },
+        { property: "og:image", content: trip.image_url || "" },
+        { name: "twitter:image", content: trip.image_url || "" },
       ],
     };
   },
@@ -38,7 +34,61 @@ export const Route = createFileRoute("/viagem/$slug")({
 });
 
 function TripPage() {
-  const { trip } = Route.useLoaderData() as { trip: Trip };
+  const [trip, setTrip] = useState<any>(null);
+  const [agency, setAgency] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      const slug = window.location.pathname.split("/").pop() || "";
+      
+      const { data: tripData } = await supabase
+        .from("trips")
+        .select("*, agencies(*)")
+        .eq("slug", slug)
+        .single();
+
+      if (tripData) {
+        setTrip(tripData);
+        setAgency(tripData.agencies || null);
+      }
+      setLoading(false);
+    }
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <p>Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!trip) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex min-h-screen items-center justify-center p-6">
+          <div className="text-center">
+            <h1 className="font-display text-3xl font-semibold">Viagem não encontrada</h1>
+            <Link to="/" className="mt-4 inline-block text-accent hover:underline">
+              Voltar para a home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const rating = trip.rating || 5.0;
+  const reviews = trip.reviews || 0;
+  const nights = trip.nights_count || 0;
+  const departureDate = trip.departure_date;
+  const returnDate = trip.return_date;
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,205 +107,118 @@ function TripPage() {
       <div className="mx-auto max-w-7xl px-6 pt-6">
         <div className="flex items-center gap-2 text-sm">
           <div className="flex items-center gap-1 font-medium text-foreground">
-            <Star className="h-4 w-4 fill-foreground" /> {trip.rating.toFixed(1)}
+            <Star className="h-4 w-4 fill-foreground" /> {rating.toFixed(1)}
           </div>
           <span className="text-muted-foreground">·</span>
-          <span className="text-muted-foreground">{trip.reviews} avaliações</span>
+          <span className="text-muted-foreground">{reviews} avaliações</span>
           <span className="text-muted-foreground">·</span>
           <span className="inline-flex items-center gap-1 text-muted-foreground">
             <MapPin className="h-3.5 w-3.5" /> {trip.destination}, {trip.state}
           </span>
         </div>
         <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight md:text-5xl">
-          {trip.destination} — {trip.nights} noites
+          {trip.destination} — {nights} noites
         </h1>
         <p className="mt-2 text-muted-foreground">
           Operado por{" "}
           <Link
             to="/agencia/$slug"
-            params={{ slug: trip.agencySlug }}
+            params={{ slug: agency?.slug || "" }}
             className="font-medium text-foreground underline-offset-4 hover:underline"
           >
-            {trip.agency}
+            {agency?.name || "Agência"}
           </Link>
         </p>
       </div>
 
-      {/* Gallery */}
+      {/* Image */}
       <div className="mx-auto mt-8 max-w-7xl px-6">
-        <div className="grid h-[60vh] max-h-[560px] gap-2 overflow-hidden rounded-3xl md:grid-cols-4 md:grid-rows-2">
+        <div className="relative aspect-[16/9] overflow-hidden rounded-3xl bg-secondary">
           <img
-            src={trip.gallery[0]}
+            src={trip.image_url || ""}
             alt={trip.destination}
-            className="h-full w-full object-cover md:col-span-2 md:row-span-2"
-            width={1280}
-            height={960}
-          />
-          <img
-            src={trip.gallery[1]}
-            alt=""
-            className="hidden h-full w-full object-cover md:block"
-            loading="lazy"
-            width={1280}
-            height={960}
-          />
-          <img
-            src={trip.gallery[2]}
-            alt=""
-            className="hidden h-full w-full object-cover md:block"
-            loading="lazy"
-            width={1280}
-            height={960}
-          />
-          <img
-            src={trip.gallery[1]}
-            alt=""
-            className="hidden h-full w-full object-cover md:block"
-            loading="lazy"
-            width={1280}
-            height={960}
-          />
-          <img
-            src={trip.gallery[2]}
-            alt=""
-            className="hidden h-full w-full object-cover md:block"
-            loading="lazy"
-            width={1280}
-            height={960}
+            className="h-full w-full object-cover"
           />
         </div>
       </div>
 
-      {/* Content */}
-      <div className="mx-auto max-w-7xl px-6 pt-14">
-        <div className="grid gap-12 lg:grid-cols-[1fr_400px]">
-          <div>
-            <div className="flex flex-wrap gap-3">
-              {trip.highlights.map((h) => (
-                <span
-                  key={h}
-                  className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-foreground"
-                >
-                  {h}
-                </span>
-              ))}
-            </div>
+      <div className="mx-auto mt-10 max-w-7xl px-6">
+        <div className="grid gap-10 lg:grid-cols-3">
+          {/* Details */}
+          <div className="space-y-10 lg:col-span-2">
+            <section>
+              <h2 className="font-display text-2xl font-semibold">Sobre a viagem</h2>
+              <p className="mt-4 leading-relaxed text-foreground/80">
+                {trip.description || "Viagem incríveis com tudo incluído."}
+              </p>
+            </section>
 
-            <h2 className="mt-12 font-display text-2xl font-semibold tracking-tight">
-              Sobre essa viagem
-            </h2>
-            <p className="mt-4 text-pretty leading-relaxed text-foreground/80">
-              {trip.description}
-            </p>
-
-            <div className="mt-12 grid gap-6 border-t border-border pt-12 sm:grid-cols-2">
-              <InfoRow
-                icon={<Calendar className="h-4 w-4" />}
-                label="Ida"
-                value={formatDate(trip.departureDate)}
-              />
-              <InfoRow
-                icon={<Calendar className="h-4 w-4" />}
-                label="Volta"
-                value={formatDate(trip.returnDate)}
-              />
-              <InfoRow
-                icon={<Bus className="h-4 w-4" />}
-                label="Transporte"
-                value={trip.vehicle}
-              />
-              <InfoRow
-                icon={<Hotel className="h-4 w-4" />}
-                label="Hospedagem"
-                value={`${trip.hotel.name} · ${trip.hotel.stars}★`}
-              />
-            </div>
-
-            <h2 className="mt-16 font-display text-2xl font-semibold tracking-tight">
-              O que está incluso
-            </h2>
-            <ul className="mt-6 space-y-3">
-              {trip.includes.map((i) => (
-                <li key={i} className="flex items-start gap-3 text-foreground/80">
-                  <div className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-accent/10 text-accent">
-                    <Check className="h-3 w-3" />
-                  </div>
-                  {i}
+            <section>
+              <h2 className="font-display text-2xl font-semibold">O que inclui</h2>
+              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-success" />
+                  <span>Hospedagem</span>
                 </li>
-              ))}
-            </ul>
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-success" />
+                  <span>Translado</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-success" />
+                  <span>Guia turístico</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-success" />
+                  <span>Seguro viagem</span>
+                </li>
+              </ul>
+            </section>
           </div>
 
           {/* Booking card */}
-          <aside className="lg:sticky lg:top-24 lg:self-start">
-            <div className="rounded-3xl border border-border bg-surface p-6 shadow-card">
-              <div className="flex items-baseline gap-2">
-                <span className="font-display text-3xl font-semibold">
-                  {formatBRL(trip.priceAdult)}
-                </span>
-                <span className="text-sm text-muted-foreground">/ adulto</span>
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                ou {trip.installments}x de{" "}
-                {formatBRL(trip.priceAdult / trip.installments)} sem juros
-              </p>
-
-              <div className="mt-6 space-y-2 rounded-2xl border border-border p-4 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Saindo de</span>
-                  <span className="font-medium">{trip.departureCity}</span>
+          <div>
+            <div className="sticky top-8 rounded-2xl border border-border bg-surface p-6 shadow-soft">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Adulto</p>
+                  <p className="text-2xl font-bold">
+                    R$ {trip.price_adult?.toLocaleString("pt-BR")}
+                  </p>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Data</span>
-                  <span className="font-medium">
-                    {formatDate(trip.departureDate)}
-                  </span>
+                {trip.price_child > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Criança (até 12 anos)</p>
+                    <p className="text-xl font-semibold">
+                      R$ {trip.price_child?.toLocaleString("pt-BR")}
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm text-muted-foreground">Data</p>
+                  <p className="font-medium">
+                    {departureDate} até {returnDate}
+                  </p>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Criança</span>
-                  <span className="font-medium">{formatBRL(trip.priceChild)}</span>
+                <div>
+                  <p className="text-sm text-muted-foreground">Vagas disponíveis</p>
+                  <p className="font-medium">{trip.available_seats} de {trip.total_seats}</p>
                 </div>
               </div>
 
               <Link
                 to="/checkout/$slug"
                 params={{ slug: trip.slug }}
-                className="mt-6 flex w-full items-center justify-center rounded-2xl bg-accent px-6 py-4 text-sm font-semibold text-accent-foreground shadow-soft transition-all hover:opacity-95 active:scale-[0.99]"
+                className="mt-6 block w-full rounded-xl bg-primary py-3 text-center font-semibold text-primary-foreground hover:bg-primary/90"
               >
                 Reservar agora
               </Link>
-
-              <p className="mt-4 text-center text-xs text-muted-foreground">
-                Você ainda não será cobrado
-              </p>
             </div>
-          </aside>
+          </div>
         </div>
       </div>
 
       <Footer />
-    </div>
-  );
-}
-
-function InfoRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-secondary text-foreground/70">
-        {icon}
-      </div>
-      <div>
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
-        <p className="mt-0.5 font-medium text-foreground">{value}</p>
-      </div>
     </div>
   );
 }

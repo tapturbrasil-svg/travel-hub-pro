@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Download } from "lucide-react";
-import { BOOKINGS } from "@/data/dashboard";
-import { TRIPS, formatBRL, formatDate } from "@/data/trips";
+import { supabase } from "@/lib/supabase";
+import { formatBRL, formatDate } from "@/data/trips";
 import { StatusBadge } from "./dashboard.index";
 
 export const Route = createFileRoute("/dashboard/passageiros")({
@@ -13,17 +13,34 @@ function Passengers() {
   const [q, setQ] = useState("");
   const [tripFilter, setTripFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "confirmada" | "pendente" | "cancelada">("all");
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [trips, setTrips] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = BOOKINGS.filter((b) => {
-    if (q && !b.passengerName.toLowerCase().includes(q.toLowerCase()) && !b.code.toLowerCase().includes(q.toLowerCase())) return false;
-    if (tripFilter && b.tripId !== tripFilter) return false;
+  useEffect(() => {
+    const loadData = async () => {
+      const [{ data: passengersData }, { data: tripsData }] = await Promise.all([
+        supabase.from("passengers").select("*, reservations(*), trips(*)"),
+        supabase.from("trips").select("*").order("departure_date", { ascending: true }),
+      ]);
+      setBookings(passengersData || []);
+      setTrips(tripsData || []);
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  const myTrips = trips.filter((t) =>
+    bookings.some((b) => b.trip_id === t.id),
+  );
+
+  const filtered = bookings.filter((b) => {
+    const trip = trips.find((t) => t.id === b.trip_id);
+    if (q && !b.name?.toLowerCase().includes(q.toLowerCase()) && !b.code?.toLowerCase().includes(q.toLowerCase())) return false;
+    if (tripFilter && b.trip_id !== tripFilter) return false;
     if (statusFilter !== "all" && b.status !== statusFilter) return false;
     return true;
   });
-
-  const myTrips = TRIPS.filter((t) =>
-    BOOKINGS.some((b) => b.tripId === t.id),
-  );
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10 md:px-10 md:py-12">
@@ -85,7 +102,12 @@ function Passengers() {
       </p>
 
       <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-background">
-        <table className="w-full text-sm">
+        {loading ? (
+          <div className="px-5 py-12 text-center text-muted-foreground">
+            Carregando...
+          </div>
+        ) : (
+          <table className="w-full text-sm">
           <thead className="bg-surface-elevated text-xs uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="px-5 py-3 text-left font-semibold">Código</th>
@@ -99,28 +121,28 @@ function Passengers() {
           </thead>
           <tbody>
             {filtered.map((b) => {
-              const trip = TRIPS.find((t) => t.id === b.tripId)!;
+              const trip = trips.find((t) => t.id === b.trip_id);
               return (
                 <tr key={b.id} className="border-t border-border">
                   <td className="px-5 py-4 font-mono text-xs">{b.code}</td>
                   <td className="px-5 py-4">
-                    <p className="font-medium">{b.passengerName}</p>
-                    <p className="text-xs text-muted-foreground">{b.passengerDoc}</p>
+                    <p className="font-medium">{b.name}</p>
+                    <p className="text-xs text-muted-foreground">{b.document}</p>
                   </td>
                   <td className="px-5 py-4 text-muted-foreground">
-                    {trip.destination}
+                    {trip?.destination}
                   </td>
                   <td className="px-5 py-4 text-muted-foreground">
-                    {formatDate(trip.departureDate)}
+                    {trip?.departure_date ? formatDate(trip.departure_date) : "-"}
                   </td>
                   <td className="px-5 py-4 tabular-nums">
-                    {String(b.seat).padStart(2, "0")}
+                    {String(b.seat || "-").padStart(2, "0")}
                   </td>
                   <td className="px-5 py-4">
                     <StatusBadge status={b.status} />
                   </td>
                   <td className="px-5 py-4 text-right font-medium">
-                    {formatBRL(b.total)}
+                    {formatBRL(b.total_value || 0)}
                   </td>
                 </tr>
               );
@@ -133,7 +155,8 @@ function Passengers() {
               </tr>
             )}
           </tbody>
-        </table>
+</table>
+        )}
       </div>
     </div>
   );

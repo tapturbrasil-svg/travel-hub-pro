@@ -1,516 +1,562 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import {
-  BedSingle,
-  BedDouble,
-  Users,
-  Crown,
-  AlignJustify,
-  ArrowUpDown,
-  StretchHorizontal,
-  ConciergeBell,
-  Coffee,
-  Gamepad2,
-  MousePointer2,
-  Eraser,
-  Plus,
-  Save,
-  Upload,
-  Download,
-  FolderOpen,
   Building2,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
   X,
+  Star,
+  Layers,
+  Users,
+  Check,
+  Bed,
+  MapPin,
+  Phone,
+  Image,
+  Upload,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/dashboard/hospedagens")({
-  component: HotelEditorPage,
-  head: () => ({ meta: [{ title: "Editor de Hotel | TapTur" }] }),
+  component: HospedagensPage,
+  head: () => ({ meta: [{ title: "Hospedagens | TapTur" }] }),
 });
 
-/* ------------------------------------------------------------------ */
-/* Tipos                                                               */
-/* ------------------------------------------------------------------ */
-
-type CellType =
-  | "empty"
-  | "single"
-  | "double"
-  | "triple"
-  | "quad"
-  | "suite"
-  | "corridor"
-  | "elevator"
-  | "stairs"
-  | "reception"
-  | "lounge"
-  | "games";
-
-type Cell = { type: CellType; label?: string };
-
-type Floor = {
+type RoomType = {
   id: string;
   name: string;
-  cols: number;
-  rows: number;
-  cells: Cell[];
-  /** primeiro número de quarto deste andar */
-  startNumber: number;
+  capacity: number;
+  pricePerPerson: number;
+  description: string;
+  available: number;
 };
 
-const TOOLS: {
-  id: CellType;
-  label: string;
-  icon: typeof BedSingle;
-  isRoom: boolean;
-  capacity?: number;
-  bg: string;
-  border: string;
-  text: string;
-}[] = [
-  { id: "single", label: "Single", icon: BedSingle, isRoom: true, capacity: 1, bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-700" },
-  { id: "double", label: "Duplo", icon: BedDouble, isRoom: true, capacity: 2, bg: "bg-blue-100", border: "border-blue-300", text: "text-blue-800" },
-  { id: "triple", label: "Triplo", icon: Users, isRoom: true, capacity: 3, bg: "bg-emerald-100", border: "border-emerald-300", text: "text-emerald-800" },
-  { id: "quad", label: "Quádruplo", icon: Users, isRoom: true, capacity: 4, bg: "bg-emerald-200", border: "border-emerald-400", text: "text-emerald-900" },
-  { id: "suite", label: "Suíte", icon: Crown, isRoom: true, capacity: 2, bg: "bg-amber-100", border: "border-amber-300", text: "text-amber-800" },
-  { id: "corridor", label: "Corredor", icon: StretchHorizontal, isRoom: false, bg: "bg-slate-100", border: "border-slate-200", text: "text-slate-600" },
-  { id: "elevator", label: "Elevador", icon: ArrowUpDown, isRoom: false, bg: "bg-slate-200", border: "border-slate-300", text: "text-slate-700" },
-  { id: "stairs", label: "Escada", icon: AlignJustify, isRoom: false, bg: "bg-slate-200", border: "border-slate-300", text: "text-slate-700" },
-  { id: "reception", label: "Recepção", icon: ConciergeBell, isRoom: false, bg: "bg-orange-100", border: "border-orange-300", text: "text-orange-700" },
-  { id: "lounge", label: "Sala de Espera", icon: Coffee, isRoom: false, bg: "bg-teal-100", border: "border-teal-300", text: "text-teal-700" },
-  { id: "games", label: "Sala de Jogos", icon: Gamepad2, isRoom: false, bg: "bg-pink-100", border: "border-pink-300", text: "text-pink-700" },
-];
+type Hospedagem = {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  stars: number;
+  description: string;
+  meals: string;
+  amenities: string[];
+  rooms: RoomType[];
+  photos: string[];
+  providerId?: string;
+  active: boolean;
+  createdAt: string;
+};
 
-function emptyFloor(name: string, cols = 6, rows = 4, startNumber = 101): Floor {
-  return {
-    id: crypto.randomUUID(),
-    name,
-    cols,
-    rows,
-    cells: Array.from({ length: cols * rows }, () => ({ type: "empty" })),
-    startNumber,
-  };
-}
+function HospedagensPage() {
+  const navigate = useNavigate();
+  const [hospedagens, setHospedagens] = useState<Hospedagem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("todos");
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editHospedagem, setEditHospedagem] = useState<Hospedagem | null>(null);
+  const [viewHospedagem, setViewHospedagem] = useState<Hospedagem | null>(null);
 
-/* ------------------------------------------------------------------ */
-/* Página                                                              */
-/* ------------------------------------------------------------------ */
+  useEffect(() => {
+    loadHospedagens();
+  }, []);
 
-function HotelEditorPage() {
-  const [hotelName, setHotelName] = useState("Novo Hotel");
-  const [hotelId] = useState(() => "HTL-" + Math.random().toString(36).slice(2, 8).toUpperCase());
-  const [floors, setFloors] = useState<Floor[]>([emptyFloor("1º")]);
-  const [activeFloorId, setActiveFloorId] = useState(floors[0].id);
-  const [tool, setTool] = useState<CellType | "select" | "erase">("double");
-
-  const activeFloor = floors.find((f) => f.id === activeFloorId)!;
-  const activeIdx = floors.findIndex((f) => f.id === activeFloorId);
-
-  /** Numera dinamicamente os quartos (em ordem de leitura: linha por linha). */
-  const roomNumbers = useMemo(() => {
-    const numbers: (number | null)[] = [];
-    let n = activeFloor.startNumber;
-    activeFloor.cells.forEach((c) => {
-      if (TOOLS.find((t) => t.id === c.type)?.isRoom) {
-        numbers.push(n++);
-      } else {
-        numbers.push(null);
-      }
-    });
-    return numbers;
-  }, [activeFloor]);
-
-  const totalRooms = roomNumbers.filter((n) => n !== null).length;
-
-  const updateFloor = (patch: Partial<Floor>) => {
-    setFloors((prev) =>
-      prev.map((f) => (f.id === activeFloorId ? { ...f, ...patch } : f)),
-    );
-  };
-
-  const setCell = (idx: number, type: CellType) => {
-    const cells = [...activeFloor.cells];
-    cells[idx] = { type };
-    updateFloor({ cells });
-  };
-
-  const handleCellClick = (idx: number) => {
-    if (tool === "select") return;
-    if (tool === "erase") {
-      setCell(idx, "empty");
-      return;
+  const loadHospedagens = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("hospedagens")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (!error && data) {
+      const mapped = data.map((h: any) => ({
+        id: h.id,
+        name: h.name,
+        address: h.address,
+        city: h.city,
+        state: h.state,
+        stars: h.stars,
+        description: h.description,
+        meals: h.meals,
+        amenities: h.amenities || [],
+        rooms: h.rooms || [],
+        photos: h.photos || [],
+        active: h.active ?? true,
+        createdAt: h.created_at,
+      }));
+      setHospedagens(mapped);
     }
-    setCell(idx, tool);
+    setLoading(false);
   };
 
-  const resizeFloor = (cols: number, rows: number) => {
-    const next: Cell[] = Array.from({ length: cols * rows }, () => ({ type: "empty" as CellType }));
-    // copiar células existentes
-    for (let r = 0; r < Math.min(rows, activeFloor.rows); r++) {
-      for (let c = 0; c < Math.min(cols, activeFloor.cols); c++) {
-        next[r * cols + c] = activeFloor.cells[r * activeFloor.cols + c];
+  const filtered = hospedagens.filter((h) => {
+    const matchSearch =
+      !search ||
+      h.name.toLowerCase().includes(search.toLowerCase()) ||
+      h.city.toLowerCase().includes(search.toLowerCase());
+    const matchStatus =
+      statusFilter === "todos" ||
+      (statusFilter === "ativo" && h.active) ||
+      (statusFilter === "inativo" && !h.active);
+    return matchSearch && matchStatus;
+  });
+
+  const stats = {
+    total: hospedagens.length,
+    ativos: hospedagens.filter((h) => h.active).length,
+    totalQuartos: hospedagens.reduce((acc, h) => acc + h.rooms.length, 0),
+    vagas: hospedagens.reduce((acc, h) => acc + h.rooms.reduce((a, r) => a + r.available, 0), 0),
+  };
+
+  const handleSave = async (hospedagem: Omit<Hospedagem, "id" | "createdAt">) => {
+    if (editHospedagem) {
+      const { error } = await supabase
+        .from("hospedagens")
+        .update({
+          name: hospedagem.name,
+          address: hospedagem.address,
+          city: hospedagem.city,
+          state: hospedagem.state,
+          stars: hospedagem.stars,
+          description: hospedagem.description,
+          meals: hospedagem.meals,
+          amenities: hospedagem.amenities,
+          rooms: hospedagem.rooms,
+          photos: hospedagem.photos,
+          active: hospedagem.active,
+        })
+        .eq("id", editHospedagem.id);
+      if (!error) {
+        loadHospedagens();
+      }
+    } else {
+      const { error } = await supabase.from("hospedagens").insert({
+        name: hospedagem.name,
+        address: hospedagem.address,
+        city: hospedagem.city,
+        state: hospedagem.state,
+        stars: hospedagem.stars,
+        description: hospedagem.description,
+        meals: hospedagem.meals,
+        amenities: hospedagem.amenities,
+        rooms: hospedagem.rooms,
+        photos: hospedagem.photos,
+        active: hospedagem.active,
+      });
+      if (!error) {
+        loadHospedagens();
       }
     }
-    updateFloor({ cols, rows, cells: next });
+    setIsCreateOpen(false);
+    setEditHospedagem(null);
   };
 
-  const addFloor = () => {
-    const num = floors.length + 1;
-    const next = emptyFloor(`${num}º`, activeFloor.cols, activeFloor.rows, 100 * num + 1);
-    setFloors([...floors, next]);
-    setActiveFloorId(next.id);
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("hospedagens").delete().eq("id", id);
+    if (!error) {
+      setHospedagens((prev) => prev.filter((h) => h.id !== id));
+    }
   };
 
-  const removeFloor = (id: string) => {
-    if (floors.length <= 1) return;
-    const next = floors.filter((f) => f.id !== id);
-    setFloors(next);
-    if (id === activeFloorId) setActiveFloorId(next[0].id);
+  const handleToggleActive = async (id: string, active: boolean) => {
+    const { error } = await supabase.from("hospedagens").update({ active }).eq("id", id);
+    if (!error) {
+      setHospedagens((prev) => prev.map((h) => h.id === id ? { ...h, active } : h));
+    }
+  };
+
+  const handleCreateLayout = (hospedagemId: string) => {
+    window.location.href = `/dashboard/hospedagens/layout/${hospedagemId}`;
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col bg-surface-elevated">
-      {/* Toolbar superior */}
-      <div className="flex flex-wrap items-center gap-3 border-b border-border bg-background px-4 py-3">
-        <div className="flex items-center gap-2 rounded-xl bg-accent/10 px-3 py-2 text-accent">
-          <Building2 className="h-4 w-4" />
-          <span className="text-sm font-semibold">Editor de Hotel</span>
+    <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mb-8 flex items-end justify-between gap-6">
+        <div>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">Hospedagens</h1>
+          <p className="mt-2 text-muted-foreground">
+            Cadastre e gerencie as hospedagens disponíveis para suas viagens.
+          </p>
         </div>
-
-        <input
-          type="text"
-          value={hotelName}
-          onChange={(e) => setHotelName(e.target.value)}
-          className="w-56 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-        />
-
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span>ID:</span>
-          <code className="rounded bg-secondary px-2 py-1 font-mono">{hotelId}</code>
-        </div>
-
-        <div className="ml-auto flex items-center gap-2">
-          <ToolbarButton icon={Upload} label="Importar" />
-          <ToolbarButton icon={Download} label="Exportar" />
-          <ToolbarButton icon={FolderOpen} label="Carregar" />
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground hover:opacity-95"
-          >
-            <Save className="h-3.5 w-3.5" />
-            Salvar
-          </button>
-        </div>
+        <Button className="gap-2" onClick={() => setIsCreateOpen(true)}>
+          <Plus className="h-4 w-4" /> Nova Hospedagem
+        </Button>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar de ferramentas */}
-        <aside className="flex w-64 flex-none flex-col overflow-y-auto border-r border-border bg-background">
-          <h3 className="px-4 pt-4 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-            Ferramentas
-          </h3>
-          <div className="grid grid-cols-2 gap-2 p-3">
-            <ToolButton
-              active={tool === "select"}
-              onClick={() => setTool("select")}
-              icon={MousePointer2}
-              label="Selecionar"
-              tone="bg-secondary border-border text-foreground"
-            />
-            {TOOLS.map((t) => (
-              <ToolButton
-                key={t.id}
-                active={tool === t.id}
-                onClick={() => setTool(t.id)}
-                icon={t.icon}
-                label={t.label}
-                badge={t.capacity ? `×${t.capacity}` : undefined}
-                tone={`${t.bg} ${t.border} ${t.text}`}
-              />
-            ))}
-            <ToolButton
-              active={tool === "erase"}
-              onClick={() => setTool("erase")}
-              icon={Eraser}
-              label="Apagar"
-              tone="bg-rose-50 border-rose-200 text-rose-700"
-            />
-          </div>
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Total de hospedagens" value={stats.total} />
+        <StatCard label="Ativas" value={stats.ativos} color="text-success" />
+        <StatCard label="Tipos de quarto" value={stats.totalQuartos} />
+        <StatCard label="Vagas disponíveis" value={stats.vagas} />
+      </div>
 
-          <p className="mx-4 mb-3 rounded-lg bg-secondary/60 px-3 py-2 text-[11px] text-muted-foreground">
-            💡 Clique numa célula para aplicar a ferramenta selecionada.
-          </p>
+      <div className="mb-4 flex flex-wrap gap-3">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Buscar hospedagem..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <select
+          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="todos">Todos</option>
+          <option value="ativo">Ativas</option>
+          <option value="inativo">Inativas</option>
+        </select>
+      </div>
 
-          {/* Andares */}
-          <div className="mt-2 border-t border-border px-4 py-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                Andares
-              </h3>
-              <button
-                type="button"
-                onClick={addFloor}
-                className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white hover:bg-emerald-600"
-                aria-label="Adicionar andar"
-              >
-                <Plus className="h-3 w-3" />
-              </button>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {floors.map((f) => (
-                <div key={f.id} className="group relative">
-                  <button
-                    type="button"
-                    onClick={() => setActiveFloorId(f.id)}
-                    className={
-                      "rounded-lg px-3 py-1.5 text-xs font-semibold " +
-                      (f.id === activeFloorId
-                        ? "bg-accent text-accent-foreground"
-                        : "bg-secondary text-foreground hover:bg-surface-elevated")
-                    }
-                  >
-                    {f.name}
-                  </button>
-                  {floors.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeFloor(f.id)}
-                      className="absolute -right-1 -top-1 hidden h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-white group-hover:flex"
-                      aria-label="Remover andar"
-                    >
-                      <X className="h-2.5 w-2.5" />
-                    </button>
-                  )}
+      {loading ? (
+        <div className="rounded-3xl border border-dashed border-border bg-surface p-12 text-center">
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-border bg-surface p-12 text-center">
+          <Building2 className="mx-auto mb-4 h-10 w-10 text-muted-foreground" />
+          <p className="text-muted-foreground">Nenhuma hospedagem encontrada</p>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((hospedagem) => (
+            <div
+              key={hospedagem.id}
+              className={`group rounded-3xl border border-border bg-background p-5 transition-shadow hover:shadow-card ${
+                !hospedagem.active ? "opacity-60" : ""
+              }`}
+            >
+              <div className="mb-4 flex items-start justify-between">
+                <div>
+                  <h3 className="font-display font-semibold">{hospedagem.name}</h3>
+                  <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {hospedagem.city} - {hospedagem.state}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
+                <div className="flex items-center gap-1">
+                  <Star className="h-4 w-4 fill-warning text-warning" />
+                  <span className="text-sm font-medium">{hospedagem.stars}</span>
+                </div>
+              </div>
 
-          {/* Dimensões */}
-          <div className="border-t border-border px-4 py-3">
-            <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              Dimensões — {activeFloor.name} andar
-            </h3>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <NumberInput
-                label="Colunas"
-                value={activeFloor.cols}
-                min={2}
-                max={12}
-                onChange={(v) => resizeFloor(v, activeFloor.rows)}
-              />
-              <NumberInput
-                label="Fileiras"
-                value={activeFloor.rows}
-                min={1}
-                max={10}
-                onChange={(v) => resizeFloor(activeFloor.cols, v)}
-              />
-            </div>
-          </div>
+              <div className="mb-4 flex flex-wrap gap-1">
+                {hospedagem.amenities.slice(0, 4).map((amenity) => (
+                  <Badge key={amenity} className="bg-secondary text-secondary-foreground text-[10px]">
+                    {amenity}
+                  </Badge>
+                ))}
+                {hospedagem.amenities.length > 4 && (
+                  <Badge className="bg-secondary text-secondary-foreground text-[10px]">
+                    +{hospedagem.amenities.length - 4}
+                  </Badge>
+                )}
+              </div>
 
-          {/* Numeração */}
-          <div className="border-t border-border px-4 py-3">
-            <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              Renumerar — {activeFloor.name} andar
-            </h3>
-            <p className="mt-2 text-[11px] text-muted-foreground">
-              {totalRooms} quarto(s). Define o número inicial e renumera em
-              ordem (linha a linha).
-            </p>
-            <NumberInput
-              label="Início"
-              value={activeFloor.startNumber}
-              min={1}
-              max={9999}
-              onChange={(v) => updateFloor({ startNumber: v })}
-            />
-          </div>
-        </aside>
+              <div className="mb-4 grid grid-cols-2 gap-2 text-sm">
+                <div className="rounded-xl bg-surface p-2">
+                  <p className="text-xs text-muted-foreground">Refeições</p>
+                  <p className="font-medium">{hospedagem.meals}</p>
+                </div>
+                <div className="rounded-xl bg-surface p-2">
+                  <p className="text-xs text-muted-foreground">Quartos</p>
+                  <p className="font-medium">{hospedagem.rooms.length} tipos</p>
+                </div>
+              </div>
 
-        {/* Canvas */}
-        <main className="flex flex-1 flex-col overflow-auto bg-surface-elevated p-8">
-          <div className="mx-auto w-full max-w-4xl">
-            <div className="mb-4 flex items-center justify-between">
-              <span className="rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground">
-                🏢 {activeFloor.name} Andar
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {activeFloor.cols} col × {activeFloor.rows} fil · {totalRooms}{" "}
-                quartos
-              </span>
-            </div>
-
-            <div className="rounded-2xl border-2 border-dashed border-border bg-background p-6 shadow-soft">
-              <div
-                className="grid gap-2"
-                style={{
-                  gridTemplateColumns: `repeat(${activeFloor.cols}, minmax(0, 1fr))`,
-                }}
-              >
-                {activeFloor.cells.map((cell, i) => {
-                  const def = TOOLS.find((t) => t.id === cell.type);
-                  const num = roomNumbers[i];
-                  const isEmpty = cell.type === "empty";
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => handleCellClick(i)}
-                      className={
-                        "aspect-square rounded-xl border-2 transition-all hover:scale-[1.03] " +
-                        (isEmpty
-                          ? "border-dashed border-border bg-surface hover:border-accent"
-                          : `${def?.bg} ${def?.border} ${def?.text} shadow-soft`)
-                      }
-                      title={def?.label ?? "Vazio"}
-                    >
-                      {!isEmpty && def && (
-                        <div className="flex h-full w-full flex-col items-center justify-center gap-1">
-                          <def.icon className="h-5 w-5" />
-                          {num !== null && def.isRoom ? (
-                            <span className="text-[11px] font-bold">{num}</span>
-                          ) : (
-                            <span className="text-[9px] font-semibold uppercase">
-                              {def.label}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
+              <div className="flex items-center justify-between border-t border-border pt-4">
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setViewHospedagem(hospedagem)}>
+                    <Bed className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditHospedagem(hospedagem); setIsCreateOpen(true); }}>
+                    <Edit className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7">
+                    <Link to="/dashboard/hospedagens/layout/$hospedagemId/viewer" params={{ hospedagemId: hospedagem.id }}>
+                      <Layers className="h-3.5 w-3.5" />
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(hospedagem.id)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => handleToggleActive(hospedagem.id, !hospedagem.active)}>
+                  {hospedagem.active ? "Desativar" : "Ativar"}
+                </Button>
               </div>
             </div>
+          ))}
+        </div>
+      )}
 
-            {/* Resumo */}
-            <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
-              {TOOLS.filter((t) => t.isRoom).map((t) => {
-                const count = activeFloor.cells.filter(
-                  (c) => c.type === t.id,
-                ).length;
-                return (
-                  <div
-                    key={t.id}
-                    className="rounded-xl border border-border bg-background p-3"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`flex h-7 w-7 items-center justify-center rounded-lg ${t.bg} ${t.text}`}
-                      >
-                        <t.icon className="h-3.5 w-3.5" />
-                      </div>
-                      <span className="text-xs font-medium">{t.label}</span>
-                    </div>
-                    <p className="mt-2 font-display text-lg font-bold">
-                      {count}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {count * (t.capacity ?? 0)} hóspede
-                      {count * (t.capacity ?? 0) === 1 ? "" : "s"}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
+      <HospedagemDialog
+        open={isCreateOpen}
+        onOpenChange={(open) => {
+          if (!open) { setIsCreateOpen(false); setEditHospedagem(null); }
+        }}
+        onSave={handleSave}
+        hospedagem={editHospedagem}
+      />
 
-            <p className="mt-6 text-center text-xs text-muted-foreground">
-              Andar atual: <strong>{activeFloor.name}</strong> · Total de
-              andares: {floors.length} · Andar #{activeIdx + 1}
-            </p>
-          </div>
-        </main>
-      </div>
+      <HospedagemDetailModal
+        open={!!viewHospedagem}
+        onOpenChange={(open) => !open && setViewHospedagem(null)}
+        hospedagem={viewHospedagem}
+      />
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* UI bits                                                             */
-/* ------------------------------------------------------------------ */
-
-function ToolbarButton({
-  icon: Icon,
-  label,
-}: {
-  icon: typeof Save;
-  label: string;
-}) {
+function StatCard({ label, value, color }: { label: string; value: number; color?: string }) {
   return (
-    <button
-      type="button"
-      className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs font-medium text-foreground hover:bg-surface-elevated"
-    >
-      <Icon className="h-3.5 w-3.5" />
-      {label}
-    </button>
+    <div className="flex items-center justify-between rounded-2xl border border-border bg-background p-4">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className={`font-display text-2xl font-semibold ${color || ""}`}>{value}</p>
+    </div>
   );
 }
 
-function ToolButton({
-  active,
-  onClick,
-  icon: Icon,
-  label,
-  badge,
-  tone,
+function HospedagemDialog({
+  open,
+  onOpenChange,
+  onSave,
+  hospedagem,
 }: {
-  active: boolean;
-  onClick: () => void;
-  icon: typeof BedSingle;
-  label: string;
-  badge?: string;
-  tone: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (h: Omit<Hospedagem, "id" | "createdAt">) => void;
+  hospedagem: Hospedagem | null;
 }) {
+  const [form, setForm] = useState<Omit<Hospedagem, "id" | "createdAt">>({
+    name: "",
+    address: "",
+    city: "",
+    state: "",
+    stars: 3,
+    description: "",
+    meals: "",
+    amenities: [],
+    rooms: [],
+    photos: [],
+    active: true,
+  });
+  const [amenityInput, setAmenityInput] = useState("");
+  const [roomForm, setRoomForm] = useState<RoomType>({ id: "", name: "", capacity: 2, pricePerPerson: 0, description: "", available: 0 });
+
+  useState(() => {
+    if (hospedagem) {
+      setForm({
+        name: hospedagem.name,
+        address: hospedagem.address,
+        city: hospedagem.city,
+        state: hospedagem.state,
+        stars: hospedagem.stars,
+        description: hospedagem.description,
+        meals: hospedagem.meals,
+        amenities: [...hospedagem.amenities],
+        rooms: [...hospedagem.rooms],
+        photos: [...hospedagem.photos],
+        active: hospedagem.active,
+      });
+    }
+  });
+
+  const addAmenity = () => {
+    if (amenityInput.trim()) {
+      setForm((f) => ({ ...f, amenities: [...f.amenities, amenityInput.trim()] }));
+      setAmenityInput("");
+    }
+  };
+
+  const removeAmenity = (index: number) => {
+    setForm((f) => ({ ...f, amenities: f.amenities.filter((_, i) => i !== index) }));
+  };
+
+  const addRoom = () => {
+    if (roomForm.name) {
+      setForm((f) => ({ ...f, rooms: [...f.rooms, { ...roomForm, id: `r${Date.now()}` }] }));
+      setRoomForm({ id: "", name: "", capacity: 2, pricePerPerson: 0, description: "", available: 0 });
+    }
+  };
+
+  const removeRoom = (id: string) => {
+    setForm((f) => ({ ...f, rooms: f.rooms.filter((r) => r.id !== id) }));
+  };
+
+  const handleSave = () => {
+    onSave(form);
+    setForm({ name: "", address: "", city: "", state: "", stars: 3, description: "", meals: "", amenities: [], rooms: [], photos: [], active: true });
+  };
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={
-        "relative flex flex-col items-center gap-1 rounded-xl border p-3 text-[11px] font-semibold transition-all " +
-        tone +
-        (active ? " ring-2 ring-accent ring-offset-2 ring-offset-background" : " hover:scale-[1.02]")
-      }
-    >
-      {badge && (
-        <span className="absolute right-1.5 top-1.5 text-[9px] font-bold opacity-70">
-          {badge}
-        </span>
-      )}
-      <Icon className="h-4 w-4" />
-      <span>{label}</span>
-    </button>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{hospedagem ? "Editar Hospedagem" : "Nova Hospedagem"}</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6 py-4">
+          <div className="space-y-2">
+            <Label>Nome</Label>
+            <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Nome da hospedagem" />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Endereço</Label>
+              <Input value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label>Cidade</Label>
+              <Input value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label>Estado</Label>
+              <Input value={form.state} onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))} maxLength={2} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Estrelas</Label>
+              <select className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm" value={form.stars} onChange={(e) => setForm((f) => ({ ...f, stars: Number(e.target.value) }))}>
+                {[1, 2, 3, 4, 5].map((s) => <option key={s} value={s}>{s} ★</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Refeições</Label>
+              <Input value={form.meals} onChange={(e) => setForm((f) => ({ ...f, meals: e.target.value }))} placeholder="Ex: All inclusive" />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Descrição</Label>
+            <Textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={2} />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Comodidades</Label>
+            <div className="flex gap-2">
+              <Input value={amenityInput} onChange={(e) => setAmenityInput(e.target.value)} placeholder="Ex: Wi-Fi" onKeyDown={(e) => e.key === "Enter" && addAmenity()} />
+              <Button onClick={addAmenity}>Adicionar</Button>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {form.amenities.map((a, i) => (
+                <Badge key={i} className="gap-1 cursor-pointer" onClick={() => removeAmenity(i)}>
+                  {a} <X className="h-3 w-3" />
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Tipos de Quarto</Label>
+            <div className="rounded-xl border border-border p-4 space-y-3">
+              <div className="grid grid-cols-4 gap-2">
+                <Input placeholder="Nome" value={roomForm.name} onChange={(e) => setRoomForm((r) => ({ ...r, name: e.target.value }))} />
+                <Input type="number" placeholder="Capacidade" value={roomForm.capacity} onChange={(e) => setRoomForm((r) => ({ ...r, capacity: Number(e.target.value) }))} />
+                <Input type="number" placeholder="Preço/pessoa" value={roomForm.pricePerPerson} onChange={(e) => setRoomForm((r) => ({ ...r, pricePerPerson: Number(e.target.value) }))} />
+                <Input placeholder="Disponíveis" type="number" value={roomForm.available} onChange={(e) => setRoomForm((r) => ({ ...r, available: Number(e.target.value) }))} />
+              </div>
+              <Input placeholder="Descrição" value={roomForm.description} onChange={(e) => setRoomForm((r) => ({ ...r, description: e.target.value }))} />
+              <Button variant="outline" onClick={addRoom}>Adicionar Quarto</Button>
+            </div>
+            {form.rooms.length > 0 && (
+              <div className="space-y-2 mt-2">
+                {form.rooms.map((room) => (
+                  <div key={room.id} className="flex items-center justify-between rounded-lg bg-surface p-2">
+                    <div className="flex items-center gap-4">
+                      <span className="font-medium">{room.name}</span>
+                      <span className="text-sm text-muted-foreground">Cap: {room.capacity}</span>
+                      <span className="text-sm text-muted-foreground">R$ {room.pricePerPerson}/pessoa</span>
+                      <span className="text-sm text-muted-foreground">{room.available} disponíveis</span>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeRoom(room.id)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+          <Button onClick={handleSave} disabled={!form.name}>Salvar Hospedagem</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
-function NumberInput({
-  label,
-  value,
-  min,
-  max,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  onChange: (v: number) => void;
-}) {
+function HospedagemDetailModal({ open, onOpenChange, hospedagem }: { open: boolean; onOpenChange: (open: boolean) => void; hospedagem: Hospedagem | null }) {
+  if (!hospedagem) return null;
+
   return (
-    <label className="flex flex-col gap-1">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
-      </span>
-      <input
-        type="number"
-        value={value}
-        min={min}
-        max={max}
-        onChange={(e) => {
-          const v = Number(e.target.value);
-          if (Number.isFinite(v) && v >= min && v <= max) onChange(v);
-        }}
-        className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-      />
-    </label>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="font-display text-xl">{hospedagem.name}</DialogTitle>
+            <div className="flex items-center gap-1">
+              <Star className="h-4 w-4 fill-warning text-warning" />
+              <span className="font-medium">{hospedagem.stars}</span>
+            </div>
+          </div>
+        </DialogHeader>
+
+        <div className="space-y-6 py-4">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <MapPin className="h-4 w-4" />
+            {hospedagem.address}, {hospedagem.city} - {hospedagem.state}
+          </div>
+
+          <p className="text-sm">{hospedagem.description}</p>
+
+          <div className="flex flex-wrap gap-2">
+            {hospedagem.amenities.map((a) => (
+              <Badge key={a} className="bg-secondary text-secondary-foreground">{a}</Badge>
+            ))}
+          </div>
+
+          <div>
+            <h4 className="mb-3 font-medium">Tipos de Quarto</h4>
+            <div className="space-y-3">
+              {hospedagem.rooms.map((room) => (
+                <div key={room.id} className="flex items-center justify-between rounded-xl border border-border p-4">
+                  <div>
+                    <p className="font-medium">{room.name}</p>
+                    <p className="text-sm text-muted-foreground">{room.description}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-display font-semibold text-accent">
+                      {room.pricePerPerson >= 0 ? `+ R$ ${room.pricePerPerson}` : `- R$ ${Math.abs(room.pricePerPerson)}`}/pessoa
+                    </p>
+                    <p className="text-sm text-muted-foreground">{room.available} disponíveis</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Fechar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
