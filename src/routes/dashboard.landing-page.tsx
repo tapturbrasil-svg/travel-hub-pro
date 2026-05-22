@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Palette,
   Upload,
@@ -37,6 +37,60 @@ export const Route = createFileRoute("/dashboard/landing-page")({
   head: () => ({ meta: [{ title: "Landing Page | TapTur" }] }),
 });
 
+function ImageUpload({
+  currentImage,
+  onUpload,
+  label,
+}: {
+  currentImage?: string;
+  onUpload: (file: File, dataUrl: string) => void;
+  label: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const handleClick = () => inputRef.current?.click();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setPreview(dataUrl);
+      onUpload(file, dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleChange}
+      />
+      <div className="flex items-center gap-4">
+        <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-border bg-surface">
+          {preview || currentImage ? (
+            <img src={preview || currentImage} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <Image className="h-6 w-6 text-muted-foreground" />
+          )}
+        </div>
+        <div>
+          <Button variant="outline" size="sm" className="gap-2" type="button" onClick={handleClick}>
+            <Upload className="h-4 w-4" /> {label}
+          </Button>
+          <p className="mt-1 text-xs text-muted-foreground">PNG, SVG ou JPG, máx 2MB</p>
+        </div>
+      </div>
+    </>
+  );
+}
+
 type Banner = {
   id: string;
   image: string;
@@ -69,6 +123,12 @@ function LandingPageEditor() {
     text: "oklch(0.18 0.015 250)",
     muted: "oklch(0.5 0.012 250)",
   });
+
+  const [uploads, setUploads] = useState<Record<string, string>>({});
+
+  const handleUpload = (key: string) => (file: File, dataUrl: string) => {
+    setUploads((prev) => ({ ...prev, [key]: dataUrl }));
+  };
 
   const [heroConfig, setHeroConfig] = useState({
     title: "Viaje para lugares que mudam tudo.",
@@ -287,32 +347,20 @@ function LandingPageEditor() {
               <div className="grid gap-6 lg:grid-cols-2">
                 <div className="space-y-4">
                   <Label>Logo da empresa</Label>
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border bg-surface">
-                      {brandConfig.logoText.charAt(0)}
-                    </div>
-                    <div>
-                      <Button variant="outline" size="sm" className="gap-2">
-                        <Upload className="h-4 w-4" /> Upload logo
-                      </Button>
-                      <p className="mt-1 text-xs text-muted-foreground">PNG, SVG ou JPG, máx 2MB</p>
-                    </div>
-                  </div>
+                  <ImageUpload
+                    currentImage={uploads.logo}
+                    onUpload={handleUpload("logo")}
+                    label="Upload logo"
+                  />
                 </div>
 
                 <div className="space-y-4">
                   <Label>Favicon</Label>
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border bg-surface">
-                      <Globe className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <Button variant="outline" size="sm" className="gap-2">
-                        <Upload className="h-4 w-4" /> Upload favicon
-                      </Button>
-                      <p className="mt-1 text-xs text-muted-foreground">32x32px, ICO ou PNG</p>
-                    </div>
-                  </div>
+                  <ImageUpload
+                    currentImage={uploads.favicon}
+                    onUpload={handleUpload("favicon")}
+                    label="Upload favicon"
+                  />
                 </div>
               </div>
             </div>
@@ -343,8 +391,36 @@ function LandingPageEditor() {
                         <GripVertical className="h-4 w-4" />
                       </div>
 
-                      <div className="flex h-24 w-40 flex-none items-center justify-center rounded-xl border border-dashed border-border bg-surface">
-                        <Image className="h-8 w-8 text-muted-foreground" />
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="flex h-24 w-40 flex-none items-center justify-center overflow-hidden rounded-xl border border-dashed border-border bg-surface">
+                          {uploads[`banner-${banner.id}`] ? (
+                            <img src={uploads[`banner-${banner.id}`]} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <Image className="h-8 w-8 text-muted-foreground" />
+                          )}
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id={`banner-upload-${banner.id}`}
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              setUploads((prev) => ({ ...prev, [`banner-${banner.id}`]: ev.target?.result as string }));
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                        />
+                        <label
+                          htmlFor={`banner-upload-${banner.id}`}
+                          className="cursor-pointer text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          <Upload className="mr-1 inline h-3 w-3" />
+                          Trocar imagem
+                        </label>
                       </div>
 
                       <div className="flex-1 space-y-3">
@@ -426,15 +502,21 @@ function LandingPageEditor() {
               <h2 className="mb-6 font-display text-xl font-semibold">Hero da Página Inicial</h2>
 
               <div className="space-y-4">
-                <div className="flex h-48 w-full items-center justify-center rounded-2xl border border-dashed border-border bg-surface">
-                  <div className="text-center">
-                    <Image className="mx-auto mb-2 h-10 w-10 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">Imagem do hero</p>
-                  </div>
+                <div className="flex h-48 w-full items-center justify-center overflow-hidden rounded-2xl border border-dashed border-border bg-surface">
+                  {uploads.hero ? (
+                    <img src={uploads.hero} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="text-center">
+                      <Image className="mx-auto mb-2 h-10 w-10 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">Imagem do hero</p>
+                    </div>
+                  )}
                 </div>
-                <Button variant="outline" className="gap-2">
-                  <Upload className="h-4 w-4" /> Upload imagem do hero
-                </Button>
+                <ImageUpload
+                  currentImage={uploads.hero}
+                  onUpload={handleUpload("hero")}
+                  label="Upload imagem do hero"
+                />
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
@@ -654,14 +736,11 @@ function LandingPageEditor() {
                 <div className="space-y-2">
                   <Label>Open Graph Image</Label>
                   <p className="mb-2 text-xs text-muted-foreground">Imagem para compartilhar no Facebook, WhatsApp, etc (1200x630px)</p>
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-24 w-40 items-center justify-center rounded-xl border border-dashed border-border bg-surface">
-                      <Image className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                    <Button variant="outline" className="gap-2">
-                      <Upload className="h-4 w-4" /> Upload imagem
-                    </Button>
-                  </div>
+                  <ImageUpload
+                    currentImage={uploads.ogimage}
+                    onUpload={handleUpload("ogimage")}
+                    label="Upload imagem"
+                  />
                 </div>
               </div>
 
