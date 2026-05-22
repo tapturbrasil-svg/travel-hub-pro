@@ -15,6 +15,7 @@ import {
   LogOut,
   Menu,
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const LOGO_URL = "https://i.imgur.com/QtFXyTi.png";
 
@@ -82,15 +83,19 @@ export function AdminShell() {
         </nav>
 
         <div className="border-t border-border p-3">
-          <Link
-            to="/"
-            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-foreground/70 hover:bg-surface-elevated hover:text-foreground ${
+          <button
+            type="button"
+            onClick={async () => {
+              await supabase.auth.signOut();
+              window.location.href = "/";
+            }}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-foreground/70 hover:bg-surface-elevated hover:text-foreground w-full ${
               collapsed ? "justify-center px-0" : ""
             }`}
           >
             <LogOut className="h-5 w-5 flex-none" />
             {!collapsed && <span>Sair</span>}
-          </Link>
+          </button>
         </div>
       </aside>
 

@@ -45,7 +45,7 @@ export function TravelerShell({ children }: { children?: ReactNode }) {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate("/", { replace: true });
+    window.location.href = "/";
   };
 
   if (loading) {
