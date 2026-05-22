@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatBRL } from "@/data/trips";
-import supabase from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/dashboard/relatorios")({
   component: RelatoriosPage,
@@ -41,18 +41,15 @@ function RelatoriosPage() {
     loadData();
   }, []);
 
-  const filteredTrips = useMemo(() => 
-    trips.filter((t: any) => t.agencySlug === "caminhos-do-sol"),
-    [trips]
-  );
+  const filteredTrips = trips;
 
   const confirmedReservations = useMemo(() => 
-    reservations.filter((r: any) => r.status === "confirmada"),
+    reservations.filter((r: any) => r.status === "confirmed"),
     [reservations]
   );
 
   const stats = useMemo(() => {
-    const totalRevenue = confirmedReservations.reduce((sum: number, r: any) => sum + (r.total_price || 0), 0);
+    const totalRevenue = confirmedReservations.reduce((sum: number, r: any) => sum + (r.total_value || 0), 0);
     const ticketCount = confirmedReservations.length;
     const avgTicket = ticketCount > 0 ? totalRevenue / ticketCount : 0;
     
@@ -60,7 +57,7 @@ function RelatoriosPage() {
     const tripCapacity: Record<string, number> = {};
     trips.forEach((t: any) => {
       tripOccupancy[t.id] = 0;
-      tripCapacity[t.id] = t.max_passengers || 0;
+      tripCapacity[t.id] = t.total_seats || 0;
     });
     reservations.forEach((r: any) => {
       if (r.trip_id && tripOccupancy[r.trip_id] !== undefined) {
@@ -89,7 +86,7 @@ function RelatoriosPage() {
         const date = new Date(r.created_at);
         const month = monthNames[date.getMonth()];
         if (months[month]) {
-          months[month].revenue += r.total_price || 0;
+          months[month].revenue += r.total_value || 0;
           months[month].bookings += 1;
         }
       }
@@ -104,7 +101,7 @@ function RelatoriosPage() {
       const dest = r.trips?.destination || "Outro";
       if (!destData[dest]) destData[dest] = { bookings: 0, revenue: 0 };
       destData[dest].bookings += 1;
-      destData[dest].revenue += r.total_price || 0;
+      destData[dest].revenue += r.total_value || 0;
     });
     
     const total = Object.values(destData).reduce((sum, d) => sum + d.revenue, 0);
@@ -124,7 +121,7 @@ function RelatoriosPage() {
     confirmedReservations.forEach((r: any) => {
       const method = r.payment_method || "Outro";
       if (!methods[method]) methods[method] = { amount: 0, count: 0 };
-      methods[method].amount += r.total_price || 0;
+      methods[method].amount += r.total_value || 0;
       methods[method].count += 1;
     });
     

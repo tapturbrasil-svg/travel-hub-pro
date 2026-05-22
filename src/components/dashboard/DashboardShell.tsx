@@ -1,4 +1,5 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Plane,
@@ -10,7 +11,7 @@ import {
   Wallet,
   Truck,
   Building2,
-  MapPin,
+  Package,
   Gift,
   BarChart3,
   UserPlus,
@@ -18,9 +19,12 @@ import {
   UserCog,
   Settings,
   LogOut,
+  Shield,
+  Loader2,
 } from "lucide-react";
-import { CURRENT_AGENCY_SLUG } from "@/data/dashboard";
-import { getAgencyBySlug } from "@/data/agencies";
+import { supabase } from "@/lib/supabase";
+
+const LOGO_URL = "https://i.imgur.com/QtFXyTi.png";
 
 const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -30,7 +34,7 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/dashboard/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/dashboard/translados", label: "Translados", icon: Truck },
   { to: "/dashboard/hospedagens", label: "Hospedagens", icon: Building2 },
-  { to: "/dashboard/itinerarios", label: "Itinerários", icon: MapPin },
+  { to: "/dashboard/fornecedores", label: "Fornecedores", icon: Package },
   { to: "/dashboard/rifas", label: "Rifas", icon: Gift },
   { to: "/dashboard/relatorios", label: "Relatórios", icon: BarChart3 },
   { to: "/dashboard/leads", label: "Leads", icon: UserPlus },
@@ -40,8 +44,55 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
 ];
 
 export function DashboardShell() {
-  const agency = getAgencyBySlug(CURRENT_AGENCY_SLUG)!;
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [agency, setAgency] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadUserAndAgency() {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        const email = session.user.email;
+        const { data: userData } = await supabase
+          .from("users")
+          .select("*, agencies(*)")
+          .eq("email", email)
+          .single();
+
+        if (userData) {
+          setUserRole(userData.role || "");
+          if (userData.agencies) {
+            setAgency(userData.agencies);
+          }
+        }
+      } else {
+        const slug = pathname.split("/").filter(Boolean)[1] || "tap-viagens";
+        const { data: agencyData } = await supabase
+          .from("agencies")
+          .select("*")
+          .eq("slug", slug)
+          .single();
+        if (agencyData) {
+          setAgency(agencyData);
+        }
+      }
+      setLoading(false);
+    }
+    loadUserAndAgency();
+  }, [pathname]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const initials = agency?.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "AG";
+  const brandColor = agency?.brand_color || "#0EA5E9";
 
   return (
     <div className="flex min-h-screen bg-surface-elevated">
@@ -49,12 +100,7 @@ export function DashboardShell() {
       <aside className="hidden w-60 flex-none flex-col border-r border-border bg-background lg:flex">
         <div className="flex h-16 items-center gap-2 border-b border-border px-5">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft">
-              <span className="font-display text-base font-bold">T</span>
-            </div>
-            <span className="font-display text-lg font-semibold tracking-tight">
-              TapTur
-            </span>
+            <img src={LOGO_URL} alt="TapTur" className="h-9 w-auto" />
           </Link>
         </div>
 
@@ -77,21 +123,44 @@ export function DashboardShell() {
               </Link>
             );
           })}
+
+          {userRole === "admin" && (
+            <>
+              <div className="my-3 border-t border-border" />
+              <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Administração
+              </p>
+              <Link
+                to="/admin"
+                className={
+                  "mt-0.5 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors " +
+                  (pathname.startsWith("/admin")
+                    ? "bg-accent/10 text-accent"
+                    : "text-foreground/70 hover:bg-surface-elevated hover:text-foreground")
+                }
+              >
+                <Shield className="h-4 w-4 flex-none" />
+                <span className="truncate">Admin SaaS</span>
+              </Link>
+            </>
+          )}
         </nav>
 
         <div className="border-t border-border p-3">
-          <div className="mb-3 flex items-center gap-3 rounded-xl bg-surface-elevated p-3">
-            <div
-              className="flex h-9 w-9 flex-none items-center justify-center rounded-lg text-xs font-bold text-white"
-              style={{ background: agency.brandColor }}
-            >
-              {agency.initials}
+          {agency && (
+            <div className="mb-3 flex items-center gap-3 rounded-xl bg-surface-elevated p-3">
+              <div
+                className="flex h-9 w-9 flex-none items-center justify-center rounded-lg text-xs font-bold text-white"
+                style={{ background: brandColor }}
+              >
+                {initials}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-xs font-semibold">{agency.name}</p>
+                <p className="text-[11px] text-muted-foreground">Plano Pro</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="truncate text-xs font-semibold">{agency.name}</p>
-              <p className="text-[11px] text-muted-foreground">Plano Pro</p>
-            </div>
-          </div>
+          )}
           <Link
             to="/"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-foreground/70 transition-colors hover:bg-surface-elevated hover:text-foreground"
@@ -125,13 +194,15 @@ export function DashboardShell() {
             >
               <Bell className="h-4 w-4" />
             </button>
-            <Link
-              to="/agencia/$slug"
-              params={{ slug: agency.slug }}
-              className="rounded-full border border-border bg-surface px-4 py-2 text-xs font-medium text-foreground hover:bg-surface-elevated"
-            >
-              Ver página pública
-            </Link>
+            {agency && (
+              <Link
+                to="/agencia/$slug"
+                params={{ slug: agency.slug }}
+                className="rounded-full border border-border bg-surface px-4 py-2 text-xs font-medium text-foreground hover:bg-surface-elevated"
+              >
+                Ver página pública
+              </Link>
+            )}
           </div>
         </header>
 

@@ -25,6 +25,7 @@ export type Room = {
 export type Trip = {
   id: string;
   slug: string;
+  agencyId?: string;
   destination: string;
   state: string;
   agency: string;

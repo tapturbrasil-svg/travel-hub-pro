@@ -1,6 +1,10 @@
 -- SQL para criar as tabelas no Supabase
 -- Execute este código no SQL Editor do Supabase
 
+-- ⚠️ Se já criou as tabelas antes, execute também:
+-- ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
+-- ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'agency_owner', 'agency_user', 'affiliate', 'customer'));
+
 -- 1. Tabela de Agências
 CREATE TABLE IF NOT EXISTS agencies (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -23,7 +27,7 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   phone TEXT,
-  role TEXT DEFAULT 'agency_user' CHECK (role IN ('admin', 'agency_owner', 'agency_user', 'customer')),
+  role TEXT DEFAULT 'customer' CHECK (role IN ('admin', 'agency_owner', 'agency_user', 'affiliate', 'customer')),
   password_hash TEXT,
   status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'blocked')),
   last_login TIMESTAMP WITH TIME ZONE,

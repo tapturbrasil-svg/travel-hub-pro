@@ -58,6 +58,8 @@ function SeedDataPage() {
           { agency_id: agencies?.[1]?.id, name: "Maria Santos", email: "maria@gramatur.com.br", phone: "(54) 99999-2222", role: "agency_owner", status: "active" },
           { agency_id: agencies?.[2]?.id, name: "João Pedro", email: "joao@praiatravel.com.br", phone: "(82) 99999-3333", role: "agency_owner", status: "active" },
           { name: "Admin Sistema", email: "admin@taptur.com.br", phone: "(11) 99999-0000", role: "admin", status: "active" },
+          { name: "Maria Afiliada", email: "maria@afiliado.com.br", phone: "(11) 99999-7777", role: "affiliate", status: "active" },
+          { name: "João Viajante", email: "joao@viajante.com.br", phone: "(11) 99999-8888", role: "customer", status: "active" },
         ]);
 
       if (usersError) throw new Error(`Users: ${usersError.message}`);

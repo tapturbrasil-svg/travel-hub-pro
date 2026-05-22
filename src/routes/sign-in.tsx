@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { Eye, EyeOff, ArrowLeft, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, Loader2 } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 
@@ -9,6 +9,18 @@ export const Route = createFileRoute("/sign-in")({
   component: SignInPage,
   head: () => ({ meta: [{ title: "Entrar | TapTur" }] }),
 });
+
+const ROLE_REDIRECT: Record<string, string> = {
+  admin: "/admin",
+  agency_owner: "/dashboard",
+  agency_user: "/dashboard",
+  affiliate: "/dashboard",
+  customer: "/conta",
+};
+
+function getRedirectPath(role: string): string {
+  return ROLE_REDIRECT[role] || "/conta";
+}
 
 function SignInPage() {
   const navigate = useNavigate();
@@ -19,12 +31,18 @@ function SignInPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/conta", { replace: true });
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const { data: userData } = await supabase
+          .from("users")
+          .select("role")
+          .eq("email", session.user.email)
+          .single();
+        const role = userData?.role || "customer";
+        window.location.href = getRedirectPath(role);
       }
     });
-  }, [navigate]);
+  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +60,14 @@ function SignInPage() {
       return;
     }
 
-    window.location.href = "/conta";
+    const { data: userData } = await supabase
+      .from("users")
+      .select("role")
+      .eq("email", email)
+      .single();
+
+    const role = userData?.role || "customer";
+    window.location.href = getRedirectPath(role);
   };
 
   return (
@@ -60,7 +85,9 @@ function SignInPage() {
         <form onSubmit={handleSignIn} className="mt-8 space-y-4">
           {error && (
             <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
+              {error === "Invalid login credentials" 
+                ? "Email ou senha incorretos." 
+                : error}
             </div>
           )}
 
@@ -102,7 +129,11 @@ function SignInPage() {
             disabled={loading}
             className="w-full rounded-xl bg-primary py-3 font-semibold text-primary-foreground disabled:opacity-50"
           >
-            {loading ? "Entrando..." : "Entrar"}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" /> Entrando...
+              </span>
+            ) : "Entrar"}
           </button>
         </form>
 

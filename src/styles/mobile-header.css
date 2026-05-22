@@ -1,0 +1,45 @@
+/* Mobile header and drawer for layout editors */
+.mobile-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 1000;
+}
+.mobile-header .burger {
+  position: absolute;
+  left: 12px;
+  font-size: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.mobile-header .logo {
+  font-weight: 700;
+  font-size: 18px;
+}
+.mobile-drawer {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  overflow: hidden;
+  background: #fff;
+  border-right: 1px solid #e5e7eb;
+  transition: width 0.25s ease;
+  z-index: 999;
+}
+.mobile-drawer.open {
+  width: 260px;
+  padding: 12px;
+}
+.viewer-content {
+  padding-top: 64px; /* leave space for fixed header */
+}

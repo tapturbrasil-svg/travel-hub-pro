@@ -1,3 +1,5 @@
+const LOGO_URL = "https://i.imgur.com/QtFXyTi.png";
+
 export function Footer() {
   return (
     <footer className="mt-32 border-t border-border bg-surface-elevated">
@@ -5,12 +7,7 @@ export function Footer() {
         <div className="grid gap-12 md:grid-cols-4">
           <div>
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                <span className="font-display text-lg font-bold">T</span>
-              </div>
-              <span className="font-display text-xl font-semibold tracking-tight">
-                TapTur
-              </span>
+              <img src={LOGO_URL} alt="TapTur" className="h-10 w-auto" />
             </div>
             <p className="mt-4 max-w-xs text-sm text-muted-foreground">
               A plataforma que conecta você às melhores agências de viagem do Brasil.

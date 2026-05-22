@@ -9,11 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignUpRouteImport } from './routes/sign-up'
+import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContaRouteImport } from './routes/conta'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as ContaIndexRouteImport } from './routes/conta.index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ViagemSlugRouteImport } from './routes/viagem.$slug'
 import { Route as ReservaConfirmadaSlugRouteImport } from './routes/reserva-confirmada.$slug'
 import { Route as DashboardUsuariosRouteImport } from './routes/dashboard.usuarios'
@@ -26,6 +29,7 @@ import { Route as DashboardLeadsRouteImport } from './routes/dashboard.leads'
 import { Route as DashboardLandingPageRouteImport } from './routes/dashboard.landing-page'
 import { Route as DashboardItinerariosRouteImport } from './routes/dashboard.itinerarios'
 import { Route as DashboardHospedagensRouteImport } from './routes/dashboard.hospedagens'
+import { Route as DashboardFornecedoresRouteImport } from './routes/dashboard.fornecedores'
 import { Route as DashboardFinanceiroRouteImport } from './routes/dashboard.financeiro'
 import { Route as DashboardConfiguracoesRouteImport } from './routes/dashboard.configuracoes'
 import { Route as ContaVouchersRouteImport } from './routes/conta.vouchers'
@@ -34,10 +38,29 @@ import { Route as ContaRifasRouteImport } from './routes/conta.rifas'
 import { Route as ContaDescontosRouteImport } from './routes/conta.descontos'
 import { Route as CheckoutSlugRouteImport } from './routes/checkout.$slug'
 import { Route as AgenciaSlugRouteImport } from './routes/agencia.$slug'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminTestRouteImport } from './routes/admin.test'
+import { Route as AdminSupportRouteImport } from './routes/admin.support'
+import { Route as AdminSeedRouteImport } from './routes/admin.seed'
+import { Route as AdminFinancialRouteImport } from './routes/admin.financial'
+import { Route as AdminAgenciesRouteImport } from './routes/admin.agencies'
 import { Route as DashboardViagensIndexRouteImport } from './routes/dashboard.viagens.index'
 import { Route as DashboardViagensNovaRouteImport } from './routes/dashboard.viagens.nova'
 import { Route as DashboardViagensTripIdRouteImport } from './routes/dashboard.viagens.$tripId'
+import { Route as DashboardRifasViewerRouteImport } from './routes/dashboard.rifas.viewer'
+import { Route as DashboardTransladosLayoutTransferIdIndexRouteImport } from './routes/dashboard.translados.layout.$transferId/index'
+import { Route as DashboardHospedagensLayoutHospedagemIdIndexRouteImport } from './routes/dashboard.hospedagens.layout.$hospedagemId/index'
 
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -62,6 +85,11 @@ const ContaIndexRoute = ContaIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ContaRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ViagemSlugRoute = ViagemSlugRouteImport.update({
   id: '/viagem/$slug',
@@ -123,6 +151,11 @@ const DashboardHospedagensRoute = DashboardHospedagensRouteImport.update({
   path: '/hospedagens',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardFornecedoresRoute = DashboardFornecedoresRouteImport.update({
+  id: '/fornecedores',
+  path: '/fornecedores',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardFinanceiroRoute = DashboardFinanceiroRouteImport.update({
   id: '/financeiro',
   path: '/financeiro',
@@ -163,6 +196,36 @@ const AgenciaSlugRoute = AgenciaSlugRouteImport.update({
   path: '/agencia/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTestRoute = AdminTestRouteImport.update({
+  id: '/admin/test',
+  path: '/admin/test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSupportRoute = AdminSupportRouteImport.update({
+  id: '/admin/support',
+  path: '/admin/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSeedRoute = AdminSeedRouteImport.update({
+  id: '/admin/seed',
+  path: '/admin/seed',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminFinancialRoute = AdminFinancialRouteImport.update({
+  id: '/admin/financial',
+  path: '/admin/financial',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAgenciesRoute = AdminAgenciesRouteImport.update({
+  id: '/admin/agencies',
+  path: '/admin/agencies',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardViagensIndexRoute = DashboardViagensIndexRouteImport.update({
   id: '/viagens/',
   path: '/viagens/',
@@ -178,11 +241,36 @@ const DashboardViagensTripIdRoute = DashboardViagensTripIdRouteImport.update({
   path: '/viagens/$tripId',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardRifasViewerRoute = DashboardRifasViewerRouteImport.update({
+  id: '/viewer',
+  path: '/viewer',
+  getParentRoute: () => DashboardRifasRoute,
+} as any)
+const DashboardTransladosLayoutTransferIdIndexRoute =
+  DashboardTransladosLayoutTransferIdIndexRouteImport.update({
+    id: '/layout/$transferId/',
+    path: '/layout/$transferId/',
+    getParentRoute: () => DashboardTransladosRoute,
+  } as any)
+const DashboardHospedagensLayoutHospedagemIdIndexRoute =
+  DashboardHospedagensLayoutHospedagemIdIndexRouteImport.update({
+    id: '/layout/$hospedagemId/',
+    path: '/layout/$hospedagemId/',
+    getParentRoute: () => DashboardHospedagensRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/conta': typeof ContaRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
+  '/admin/agencies': typeof AdminAgenciesRoute
+  '/admin/financial': typeof AdminFinancialRoute
+  '/admin/seed': typeof AdminSeedRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/admin/test': typeof AdminTestRoute
+  '/admin/users': typeof AdminUsersRoute
   '/agencia/$slug': typeof AgenciaSlugRoute
   '/checkout/$slug': typeof CheckoutSlugRoute
   '/conta/descontos': typeof ContaDescontosRoute
@@ -191,26 +279,39 @@ export interface FileRoutesByFullPath {
   '/conta/vouchers': typeof ContaVouchersRoute
   '/dashboard/configuracoes': typeof DashboardConfiguracoesRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
-  '/dashboard/hospedagens': typeof DashboardHospedagensRoute
+  '/dashboard/fornecedores': typeof DashboardFornecedoresRoute
+  '/dashboard/hospedagens': typeof DashboardHospedagensRouteWithChildren
   '/dashboard/itinerarios': typeof DashboardItinerariosRoute
   '/dashboard/landing-page': typeof DashboardLandingPageRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/passageiros': typeof DashboardPassageirosRoute
   '/dashboard/relatorios': typeof DashboardRelatoriosRoute
   '/dashboard/reservas': typeof DashboardReservasRoute
-  '/dashboard/rifas': typeof DashboardRifasRoute
-  '/dashboard/translados': typeof DashboardTransladosRoute
+  '/dashboard/rifas': typeof DashboardRifasRouteWithChildren
+  '/dashboard/translados': typeof DashboardTransladosRouteWithChildren
   '/dashboard/usuarios': typeof DashboardUsuariosRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/conta/': typeof ContaIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/rifas/viewer': typeof DashboardRifasViewerRoute
   '/dashboard/viagens/$tripId': typeof DashboardViagensTripIdRoute
   '/dashboard/viagens/nova': typeof DashboardViagensNovaRoute
   '/dashboard/viagens/': typeof DashboardViagensIndexRoute
+  '/dashboard/hospedagens/layout/$hospedagemId/': typeof DashboardHospedagensLayoutHospedagemIdIndexRoute
+  '/dashboard/translados/layout/$transferId/': typeof DashboardTransladosLayoutTransferIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
+  '/admin/agencies': typeof AdminAgenciesRoute
+  '/admin/financial': typeof AdminFinancialRoute
+  '/admin/seed': typeof AdminSeedRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/admin/test': typeof AdminTestRoute
+  '/admin/users': typeof AdminUsersRoute
   '/agencia/$slug': typeof AgenciaSlugRoute
   '/checkout/$slug': typeof CheckoutSlugRoute
   '/conta/descontos': typeof ContaDescontosRoute
@@ -219,29 +320,42 @@ export interface FileRoutesByTo {
   '/conta/vouchers': typeof ContaVouchersRoute
   '/dashboard/configuracoes': typeof DashboardConfiguracoesRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
-  '/dashboard/hospedagens': typeof DashboardHospedagensRoute
+  '/dashboard/fornecedores': typeof DashboardFornecedoresRoute
+  '/dashboard/hospedagens': typeof DashboardHospedagensRouteWithChildren
   '/dashboard/itinerarios': typeof DashboardItinerariosRoute
   '/dashboard/landing-page': typeof DashboardLandingPageRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/passageiros': typeof DashboardPassageirosRoute
   '/dashboard/relatorios': typeof DashboardRelatoriosRoute
   '/dashboard/reservas': typeof DashboardReservasRoute
-  '/dashboard/rifas': typeof DashboardRifasRoute
-  '/dashboard/translados': typeof DashboardTransladosRoute
+  '/dashboard/rifas': typeof DashboardRifasRouteWithChildren
+  '/dashboard/translados': typeof DashboardTransladosRouteWithChildren
   '/dashboard/usuarios': typeof DashboardUsuariosRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
+  '/admin': typeof AdminIndexRoute
   '/conta': typeof ContaIndexRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/rifas/viewer': typeof DashboardRifasViewerRoute
   '/dashboard/viagens/$tripId': typeof DashboardViagensTripIdRoute
   '/dashboard/viagens/nova': typeof DashboardViagensNovaRoute
   '/dashboard/viagens': typeof DashboardViagensIndexRoute
+  '/dashboard/hospedagens/layout/$hospedagemId': typeof DashboardHospedagensLayoutHospedagemIdIndexRoute
+  '/dashboard/translados/layout/$transferId': typeof DashboardTransladosLayoutTransferIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/conta': typeof ContaRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
+  '/admin/agencies': typeof AdminAgenciesRoute
+  '/admin/financial': typeof AdminFinancialRoute
+  '/admin/seed': typeof AdminSeedRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/admin/test': typeof AdminTestRoute
+  '/admin/users': typeof AdminUsersRoute
   '/agencia/$slug': typeof AgenciaSlugRoute
   '/checkout/$slug': typeof CheckoutSlugRoute
   '/conta/descontos': typeof ContaDescontosRoute
@@ -250,23 +364,28 @@ export interface FileRoutesById {
   '/conta/vouchers': typeof ContaVouchersRoute
   '/dashboard/configuracoes': typeof DashboardConfiguracoesRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
-  '/dashboard/hospedagens': typeof DashboardHospedagensRoute
+  '/dashboard/fornecedores': typeof DashboardFornecedoresRoute
+  '/dashboard/hospedagens': typeof DashboardHospedagensRouteWithChildren
   '/dashboard/itinerarios': typeof DashboardItinerariosRoute
   '/dashboard/landing-page': typeof DashboardLandingPageRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/passageiros': typeof DashboardPassageirosRoute
   '/dashboard/relatorios': typeof DashboardRelatoriosRoute
   '/dashboard/reservas': typeof DashboardReservasRoute
-  '/dashboard/rifas': typeof DashboardRifasRoute
-  '/dashboard/translados': typeof DashboardTransladosRoute
+  '/dashboard/rifas': typeof DashboardRifasRouteWithChildren
+  '/dashboard/translados': typeof DashboardTransladosRouteWithChildren
   '/dashboard/usuarios': typeof DashboardUsuariosRoute
   '/reserva-confirmada/$slug': typeof ReservaConfirmadaSlugRoute
   '/viagem/$slug': typeof ViagemSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/conta/': typeof ContaIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/rifas/viewer': typeof DashboardRifasViewerRoute
   '/dashboard/viagens/$tripId': typeof DashboardViagensTripIdRoute
   '/dashboard/viagens/nova': typeof DashboardViagensNovaRoute
   '/dashboard/viagens/': typeof DashboardViagensIndexRoute
+  '/dashboard/hospedagens/layout/$hospedagemId/': typeof DashboardHospedagensLayoutHospedagemIdIndexRoute
+  '/dashboard/translados/layout/$transferId/': typeof DashboardTransladosLayoutTransferIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -274,6 +393,14 @@ export interface FileRouteTypes {
     | '/'
     | '/conta'
     | '/dashboard'
+    | '/sign-in'
+    | '/sign-up'
+    | '/admin/agencies'
+    | '/admin/financial'
+    | '/admin/seed'
+    | '/admin/support'
+    | '/admin/test'
+    | '/admin/users'
     | '/agencia/$slug'
     | '/checkout/$slug'
     | '/conta/descontos'
@@ -282,6 +409,7 @@ export interface FileRouteTypes {
     | '/conta/vouchers'
     | '/dashboard/configuracoes'
     | '/dashboard/financeiro'
+    | '/dashboard/fornecedores'
     | '/dashboard/hospedagens'
     | '/dashboard/itinerarios'
     | '/dashboard/landing-page'
@@ -294,14 +422,26 @@ export interface FileRouteTypes {
     | '/dashboard/usuarios'
     | '/reserva-confirmada/$slug'
     | '/viagem/$slug'
+    | '/admin/'
     | '/conta/'
     | '/dashboard/'
+    | '/dashboard/rifas/viewer'
     | '/dashboard/viagens/$tripId'
     | '/dashboard/viagens/nova'
     | '/dashboard/viagens/'
+    | '/dashboard/hospedagens/layout/$hospedagemId/'
+    | '/dashboard/translados/layout/$transferId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/sign-in'
+    | '/sign-up'
+    | '/admin/agencies'
+    | '/admin/financial'
+    | '/admin/seed'
+    | '/admin/support'
+    | '/admin/test'
+    | '/admin/users'
     | '/agencia/$slug'
     | '/checkout/$slug'
     | '/conta/descontos'
@@ -310,6 +450,7 @@ export interface FileRouteTypes {
     | '/conta/vouchers'
     | '/dashboard/configuracoes'
     | '/dashboard/financeiro'
+    | '/dashboard/fornecedores'
     | '/dashboard/hospedagens'
     | '/dashboard/itinerarios'
     | '/dashboard/landing-page'
@@ -322,16 +463,28 @@ export interface FileRouteTypes {
     | '/dashboard/usuarios'
     | '/reserva-confirmada/$slug'
     | '/viagem/$slug'
+    | '/admin'
     | '/conta'
     | '/dashboard'
+    | '/dashboard/rifas/viewer'
     | '/dashboard/viagens/$tripId'
     | '/dashboard/viagens/nova'
     | '/dashboard/viagens'
+    | '/dashboard/hospedagens/layout/$hospedagemId'
+    | '/dashboard/translados/layout/$transferId'
   id:
     | '__root__'
     | '/'
     | '/conta'
     | '/dashboard'
+    | '/sign-in'
+    | '/sign-up'
+    | '/admin/agencies'
+    | '/admin/financial'
+    | '/admin/seed'
+    | '/admin/support'
+    | '/admin/test'
+    | '/admin/users'
     | '/agencia/$slug'
     | '/checkout/$slug'
     | '/conta/descontos'
@@ -340,6 +493,7 @@ export interface FileRouteTypes {
     | '/conta/vouchers'
     | '/dashboard/configuracoes'
     | '/dashboard/financeiro'
+    | '/dashboard/fornecedores'
     | '/dashboard/hospedagens'
     | '/dashboard/itinerarios'
     | '/dashboard/landing-page'
@@ -352,25 +506,52 @@ export interface FileRouteTypes {
     | '/dashboard/usuarios'
     | '/reserva-confirmada/$slug'
     | '/viagem/$slug'
+    | '/admin/'
     | '/conta/'
     | '/dashboard/'
+    | '/dashboard/rifas/viewer'
     | '/dashboard/viagens/$tripId'
     | '/dashboard/viagens/nova'
     | '/dashboard/viagens/'
+    | '/dashboard/hospedagens/layout/$hospedagemId/'
+    | '/dashboard/translados/layout/$transferId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ContaRoute: typeof ContaRouteWithChildren
   DashboardRoute: typeof DashboardRouteWithChildren
+  SignInRoute: typeof SignInRoute
+  SignUpRoute: typeof SignUpRoute
+  AdminAgenciesRoute: typeof AdminAgenciesRoute
+  AdminFinancialRoute: typeof AdminFinancialRoute
+  AdminSeedRoute: typeof AdminSeedRoute
+  AdminSupportRoute: typeof AdminSupportRoute
+  AdminTestRoute: typeof AdminTestRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   AgenciaSlugRoute: typeof AgenciaSlugRoute
   CheckoutSlugRoute: typeof CheckoutSlugRoute
   ReservaConfirmadaSlugRoute: typeof ReservaConfirmadaSlugRoute
   ViagemSlugRoute: typeof ViagemSlugRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -405,6 +586,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/conta/'
       preLoaderRoute: typeof ContaIndexRouteImport
       parentRoute: typeof ContaRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/viagem/$slug': {
       id: '/viagem/$slug'
@@ -490,6 +678,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardHospedagensRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/fornecedores': {
+      id: '/dashboard/fornecedores'
+      path: '/fornecedores'
+      fullPath: '/dashboard/fornecedores'
+      preLoaderRoute: typeof DashboardFornecedoresRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/financeiro': {
       id: '/dashboard/financeiro'
       path: '/financeiro'
@@ -546,6 +741,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgenciaSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/test': {
+      id: '/admin/test'
+      path: '/admin/test'
+      fullPath: '/admin/test'
+      preLoaderRoute: typeof AdminTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/support': {
+      id: '/admin/support'
+      path: '/admin/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AdminSupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/seed': {
+      id: '/admin/seed'
+      path: '/admin/seed'
+      fullPath: '/admin/seed'
+      preLoaderRoute: typeof AdminSeedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/financial': {
+      id: '/admin/financial'
+      path: '/admin/financial'
+      fullPath: '/admin/financial'
+      preLoaderRoute: typeof AdminFinancialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/agencies': {
+      id: '/admin/agencies'
+      path: '/admin/agencies'
+      fullPath: '/admin/agencies'
+      preLoaderRoute: typeof AdminAgenciesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/viagens/': {
       id: '/dashboard/viagens/'
       path: '/viagens'
@@ -566,6 +803,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/viagens/$tripId'
       preLoaderRoute: typeof DashboardViagensTripIdRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/rifas/viewer': {
+      id: '/dashboard/rifas/viewer'
+      path: '/viewer'
+      fullPath: '/dashboard/rifas/viewer'
+      preLoaderRoute: typeof DashboardRifasViewerRouteImport
+      parentRoute: typeof DashboardRifasRoute
+    }
+    '/dashboard/translados/layout/$transferId/': {
+      id: '/dashboard/translados/layout/$transferId/'
+      path: '/layout/$transferId'
+      fullPath: '/dashboard/translados/layout/$transferId/'
+      preLoaderRoute: typeof DashboardTransladosLayoutTransferIdIndexRouteImport
+      parentRoute: typeof DashboardTransladosRoute
+    }
+    '/dashboard/hospedagens/layout/$hospedagemId/': {
+      id: '/dashboard/hospedagens/layout/$hospedagemId/'
+      path: '/layout/$hospedagemId'
+      fullPath: '/dashboard/hospedagens/layout/$hospedagemId/'
+      preLoaderRoute: typeof DashboardHospedagensLayoutHospedagemIdIndexRouteImport
+      parentRoute: typeof DashboardHospedagensRoute
     }
   }
 }
@@ -588,18 +846,55 @@ const ContaRouteChildren: ContaRouteChildren = {
 
 const ContaRouteWithChildren = ContaRoute._addFileChildren(ContaRouteChildren)
 
+interface DashboardHospedagensRouteChildren {
+  DashboardHospedagensLayoutHospedagemIdIndexRoute: typeof DashboardHospedagensLayoutHospedagemIdIndexRoute
+}
+
+const DashboardHospedagensRouteChildren: DashboardHospedagensRouteChildren = {
+  DashboardHospedagensLayoutHospedagemIdIndexRoute:
+    DashboardHospedagensLayoutHospedagemIdIndexRoute,
+}
+
+const DashboardHospedagensRouteWithChildren =
+  DashboardHospedagensRoute._addFileChildren(DashboardHospedagensRouteChildren)
+
+interface DashboardRifasRouteChildren {
+  DashboardRifasViewerRoute: typeof DashboardRifasViewerRoute
+}
+
+const DashboardRifasRouteChildren: DashboardRifasRouteChildren = {
+  DashboardRifasViewerRoute: DashboardRifasViewerRoute,
+}
+
+const DashboardRifasRouteWithChildren = DashboardRifasRoute._addFileChildren(
+  DashboardRifasRouteChildren,
+)
+
+interface DashboardTransladosRouteChildren {
+  DashboardTransladosLayoutTransferIdIndexRoute: typeof DashboardTransladosLayoutTransferIdIndexRoute
+}
+
+const DashboardTransladosRouteChildren: DashboardTransladosRouteChildren = {
+  DashboardTransladosLayoutTransferIdIndexRoute:
+    DashboardTransladosLayoutTransferIdIndexRoute,
+}
+
+const DashboardTransladosRouteWithChildren =
+  DashboardTransladosRoute._addFileChildren(DashboardTransladosRouteChildren)
+
 interface DashboardRouteChildren {
   DashboardConfiguracoesRoute: typeof DashboardConfiguracoesRoute
   DashboardFinanceiroRoute: typeof DashboardFinanceiroRoute
-  DashboardHospedagensRoute: typeof DashboardHospedagensRoute
+  DashboardFornecedoresRoute: typeof DashboardFornecedoresRoute
+  DashboardHospedagensRoute: typeof DashboardHospedagensRouteWithChildren
   DashboardItinerariosRoute: typeof DashboardItinerariosRoute
   DashboardLandingPageRoute: typeof DashboardLandingPageRoute
   DashboardLeadsRoute: typeof DashboardLeadsRoute
   DashboardPassageirosRoute: typeof DashboardPassageirosRoute
   DashboardRelatoriosRoute: typeof DashboardRelatoriosRoute
   DashboardReservasRoute: typeof DashboardReservasRoute
-  DashboardRifasRoute: typeof DashboardRifasRoute
-  DashboardTransladosRoute: typeof DashboardTransladosRoute
+  DashboardRifasRoute: typeof DashboardRifasRouteWithChildren
+  DashboardTransladosRoute: typeof DashboardTransladosRouteWithChildren
   DashboardUsuariosRoute: typeof DashboardUsuariosRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardViagensTripIdRoute: typeof DashboardViagensTripIdRoute
@@ -610,15 +905,16 @@ interface DashboardRouteChildren {
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardConfiguracoesRoute: DashboardConfiguracoesRoute,
   DashboardFinanceiroRoute: DashboardFinanceiroRoute,
-  DashboardHospedagensRoute: DashboardHospedagensRoute,
+  DashboardFornecedoresRoute: DashboardFornecedoresRoute,
+  DashboardHospedagensRoute: DashboardHospedagensRouteWithChildren,
   DashboardItinerariosRoute: DashboardItinerariosRoute,
   DashboardLandingPageRoute: DashboardLandingPageRoute,
   DashboardLeadsRoute: DashboardLeadsRoute,
   DashboardPassageirosRoute: DashboardPassageirosRoute,
   DashboardRelatoriosRoute: DashboardRelatoriosRoute,
   DashboardReservasRoute: DashboardReservasRoute,
-  DashboardRifasRoute: DashboardRifasRoute,
-  DashboardTransladosRoute: DashboardTransladosRoute,
+  DashboardRifasRoute: DashboardRifasRouteWithChildren,
+  DashboardTransladosRoute: DashboardTransladosRouteWithChildren,
   DashboardUsuariosRoute: DashboardUsuariosRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardViagensTripIdRoute: DashboardViagensTripIdRoute,
@@ -634,11 +930,29 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ContaRoute: ContaRouteWithChildren,
   DashboardRoute: DashboardRouteWithChildren,
+  SignInRoute: SignInRoute,
+  SignUpRoute: SignUpRoute,
+  AdminAgenciesRoute: AdminAgenciesRoute,
+  AdminFinancialRoute: AdminFinancialRoute,
+  AdminSeedRoute: AdminSeedRoute,
+  AdminSupportRoute: AdminSupportRoute,
+  AdminTestRoute: AdminTestRoute,
+  AdminUsersRoute: AdminUsersRoute,
   AgenciaSlugRoute: AgenciaSlugRoute,
   CheckoutSlugRoute: CheckoutSlugRoute,
   ReservaConfirmadaSlugRoute: ReservaConfirmadaSlugRoute,
   ViagemSlugRoute: ViagemSlugRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

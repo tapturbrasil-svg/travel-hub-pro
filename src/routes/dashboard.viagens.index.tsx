@@ -30,7 +30,7 @@ function TripsList() {
   const loadTrips = async () => {
     const { data, error } = await supabase
       .from("trips")
-      .select("*, agency!inner(slug)")
+      .select("*, agencies(slug)")
       .order("departure_date", { ascending: true });
 
     if (error) {
@@ -41,7 +41,7 @@ function TripsList() {
     const mapped = data?.map((t) => ({
       id: t.id,
       slug: t.slug,
-      agencySlug: t.agency?.slug || CURRENT_AGENCY_SLUG,
+      agencySlug: t.agencies?.slug || CURRENT_AGENCY_SLUG,
       agencyId: t.agency_id,
       destination: t.destination,
       departureDate: t.departure_date,
